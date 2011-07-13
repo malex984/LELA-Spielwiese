@@ -26,26 +26,27 @@ BASIC_TESTS =  \
         test-commentator        \
         test-gf2                \
         test-gmp-rational       \
-	test-matrix		\
+        test-matrix                \
         test-modular            \
         test-modular-double     \
         test-blas-generic-module      \
-	test-blas-generic-module-gf2	\
+        test-blas-generic-module-gf2        \
         test-randiter-nonzero   \
         test-subiterator        \
         test-subvector          \
-	test-bit-subvector	\
-	test-hybrid-vector	\
-        test-unparametric-ring	\
-	test-strassen-winograd	\
-	test-elimination	\
-	test-gauss-jordan	\
-	test-faugere-lachartre
+        test-bit-subvector        \
+        test-hybrid-vector        \
+        test-unparametric-ring        \
+        test-strassen-winograd        \
+        test-elimination        \
+        test-gauss-jordan        \
+        test-faugere-lachartre \
+        test-coeffs
 
 # a benchmarker, not to be included in check.
 BENCHMARKS =            \
         benchmark-rings \
-	benchmark-blas
+        benchmark-blas
 
 EXTRA_PROGRAMS = $(NON_COMPILING_TESTS) $(BENCHMARKS)
 
@@ -107,37 +108,41 @@ test_modular_double_SOURCES =                \
         test-common.C
 
 test_matrix_SOURCES = \
-	test-matrix.C \
-	test-common.C \
-	test-matrix.h
+        test-matrix.C \
+        test-common.C \
+        test-matrix.h
 
 test_bit_subvector_SOURCES = \
-	test-bit-subvector.C \
-	test-common.C
+        test-bit-subvector.C \
+        test-common.C
 
 test_hybrid_vector_SOURCES = \
-	test-hybrid-vector.C \
-	test-common.C
+        test-hybrid-vector.C \
+        test-common.C
 
 test_strassen_winograd_SOURCES = \
-	test-common.C		\
-	test-strassen-winograd.C
+        test-common.C                \
+        test-strassen-winograd.C
 
 test_elimination_SOURCES = \
-	test-common.C		\
-	test-elimination.C
+        test-common.C                \
+        test-elimination.C
 
 test_gauss_jordan_SOURCES = \
-	test-common.C		\
-	test-gauss-jordan.C
+        test-common.C                \
+        test-gauss-jordan.C
 
 test_faugere_lachartre_SOURCES = \
-	test-common.C		\
-	test-faugere-lachartre.C
+        test-common.C                \
+        test-faugere-lachartre.C
 
 benchmark_blas_SOURCES =    \
-	benchmark-blas.C    \
-	test-common.C	    \
-	test-blas-level3.h
+        benchmark-blas.C    \
+        test-common.C            \
+        test-blas-level3.h
 
 benchmark_matrix_domain_CXXFLAGS = ${BENCHMARK_CXXFLAGS}
+
+test_coeffs_SOURCES = \
+        test-coeffs.C \
+        test-common.C
