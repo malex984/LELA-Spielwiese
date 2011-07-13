@@ -289,7 +289,7 @@ public:
 	{
 		Element t = x;
 		mulin (t, y);
-		x = t;
+		return x = t;
 	}
    
 	/** Inplace Division; x /= y
