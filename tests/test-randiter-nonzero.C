@@ -89,7 +89,11 @@ int main (int argc, char **argv)
 	};
 
 	parseArguments (argc, argv, args);
-	MyModular<uint32> F (q);
+
+        typedef MyModular<uint32> Ring;
+        typedef Ring::Element Element;
+   
+	Ring F (q);
 
 	srand (time (NULL));
 

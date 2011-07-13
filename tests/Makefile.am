@@ -37,11 +37,11 @@ BASIC_TESTS =  \
 	test-bit-subvector	\
 	test-hybrid-vector	\
         test-type-wrapper-ring	\
+        test-strassen-winograd  \
 	test-elimination	\
 	test-gauss-jordan	\
 	test-faugere-lachartre  \
         test-coeffs
-# test-strassen-winograd cannot be compiled :(((
 
 # a benchmarker, not to be included in check.
 BENCHMARKS =            \

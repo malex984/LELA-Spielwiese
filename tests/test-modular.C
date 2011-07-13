@@ -61,21 +61,21 @@ int main (int argc, char **argv)
 	commentator.start("MyModular test suite", "MyModular ");
 	bool pass = true;
 
-	MyModular<integer> F_integer (q1);
+//	MyModular<integer> F_integer (q1);
 	MyModular<uint32> F_uint32 (q2.get_ui ());
 	MyModular<uint16> F_uint16 (q3.get_ui ());
 	MyModular<uint8> F_uint8 ((uint8) q4);
-	MyModular<float> F_float ((float) q4);
+//	MyModular<float> F_float ((float) q4);
 
 	// Make sure some more detailed messages get printed
 	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDepth (6);
 	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDetailLevel (Commentator::LEVEL_UNIMPORTANT);
 
-	if (!runRingTests (F_integer, "MyModular<integer>", iterations, false)) pass = false;
+//	if (!runRingTests (F_integer, "MyModular<integer>", iterations, false)) pass = false;
 	if (!runRingTests (F_uint32,  "MyModular<uint32>",  iterations, false)) pass = false;
 	if (!runRingTests (F_uint16,  "MyModular<uint16>",  iterations, false)) pass = false;
 	if (!runRingTests (F_uint8,  "MyModular<uint8>",  iterations, false)) pass = false;
-	if (!runRingTests (F_float,  "MyModular<float>",  iterations, false)) pass = false;
+//	if (!runRingTests (F_float,  "MyModular<float>",  iterations, false)) pass = false;
 
 	//if (!testRandomIterator (F_integer, "MyModular<integer>", trials, categories, hist_level)) pass = false;
 	if (!testRandomIterator (F_uint32,  "MyModular<uint32>", trials, categories, hist_level)) pass = false;

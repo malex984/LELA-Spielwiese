@@ -112,8 +112,11 @@ int main (int argc, char **argv)
 	};
 
 	parseArguments (argc, argv, args);
-
-	MyModular<uint32> GFq (q);
+   
+        typedef MyModular<uint32> Ring;
+        typedef Ring::Element Element;
+   
+	Ring GFq (q);
 	GF2 gf2;
 
 	commentator.setBriefReportParameters (Commentator::OUTPUT_CONSOLE, false, false, false);

@@ -230,7 +230,7 @@ bool  MyArithTest (const Ring &R) //  , typename Ring::Element &v
     // :(
     try
     {
-      //      BLAS3::write(ctx, report << "red RowEchelonForm(D): " << endl, EF.RowEchelonForm(D, true), FORMAT_SAGE);
+      BLAS3::write(ctx, report << "red RowEchelonForm(D): " << endl, EF.RowEchelonForm(D, true), FORMAT_SAGE);
     }
     catch (LinboxError e)
     {
@@ -244,7 +244,7 @@ bool  MyArithTest (const Ring &R) //  , typename Ring::Element &v
 
     try
     {
-      //      BLAS3::write(ctx, report << "red RowEchelonForm(S): " << endl, EF.RowEchelonForm(S, true), FORMAT_SAGE); 
+      BLAS3::write(ctx, report << "red RowEchelonForm(S): " << endl, EF.RowEchelonForm(S, true), FORMAT_SAGE); 
     }
     catch (LinboxError e)
     {
@@ -435,8 +435,11 @@ BOOLEAN simple(const string tn, const n_coeffType _type, void* param = NULL)
 bool TestLinbox()
 {
   bool pass = true;
-
-  MyModular<uint8> F(5);
+   
+  typedef MyModular<uint8> Ring;
+  typedef Ring::Element Element;
+   
+  Ring F(5);
 
   commentator.start ("MyArithTest( MyModular<uint8>(5) )", __FUNCTION__);
   try

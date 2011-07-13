@@ -168,8 +168,11 @@ int main (int argc, char **argv)
 	};
 
 	parseArguments (argc, argv, args);
+   
+        typedef MyModular<uint32> Ring;
+        typedef typename Ring::Element Element;
 
-	MyModular<uint32> GFq (q);
+	Ring GFq (q);
 	GF2 gf2;
 
 	commentator.setBriefReportParameters (Commentator::OUTPUT_CONSOLE, false, false, false);
@@ -182,13 +185,13 @@ int main (int argc, char **argv)
 	std::ostringstream str;
 	str << "Running tests over GF(" << q << ")" << std::ends;
 
-	Context<MyModular<uint32> > ctx_GFq (GFq);
+	Context< Ring > ctx_GFq (GFq);
 
-	RandomDenseStream<MyModular<uint32>, DenseMatrix<uint32>::Row> stream_A_gfq (GFq, m, k);
-	RandomDenseStream<MyModular<uint32>, DenseMatrix<uint32>::Row> stream_B_gfq (GFq, k, n);
-	RandomDenseStream<MyModular<uint32>, DenseMatrix<uint32>::Row> stream_C_gfq (GFq, m, n);
+	RandomDenseStream<Ring, DenseMatrix<Element>::Row> stream_A_gfq (GFq, m, k);
+	RandomDenseStream<Ring, DenseMatrix<Element>::Row> stream_B_gfq (GFq, k, n);
+	RandomDenseStream<Ring, DenseMatrix<Element>::Row> stream_C_gfq (GFq, m, n);
 
-	DenseMatrix<uint32> A_gfq (stream_A_gfq), B_gfq (stream_B_gfq), C_gfq (stream_C_gfq);
+	DenseMatrix<Element> A_gfq (stream_A_gfq), B_gfq (stream_B_gfq), C_gfq (stream_C_gfq);
 
 	commentator.start (str.str ().c_str (), "Strassen-Winograd");
 

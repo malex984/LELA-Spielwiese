@@ -63,8 +63,8 @@ int main (int argc, char **argv)
 
 	commentator.start ("BLAS GenericModule test suite", "BLASGenericModule");
 
-	if (!testBLAS1 (ctx, "MyModular <uint32>", l, iterations)) pass = false;
-	if (!testBLAS1RepsConsistency (ctx, "MyModular <uint32>", l, iterations)) pass = false;
+	if (!testBLAS1 (ctx, "MyModular <uint8>", l, iterations)) pass = false;
+	if (!testBLAS1RepsConsistency (ctx, "MyModular <uint8>", l, iterations)) pass = false;
 
 	RandomDenseStream<Ring, Vector<Ring>::Dense> stream_v1 (F, l, 1);
 	RandomDenseStream<Ring, Vector<Ring>::Dense> stream_v2 (F, m, 1);
