@@ -8,7 +8,10 @@ BASIC_HDRS =			\
 	unparametric.h		\
 	gmp-rational.h		\
 	modular.h		\
-	gf2.h
+	gf2.h		\
+	coeffs.h		\
+	mymodular.h
+
 
 pkgincludesub_HEADERS =			\
 	$(BASIC_HDRS)
