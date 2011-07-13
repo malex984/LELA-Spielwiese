@@ -15,7 +15,6 @@
 #include <fstream>
 #include <vector>
 
-<<<<<<< HEAD
 #include "lela/util/commentator.h"
 #include "lela/ring/mymodular.h"
 // #include "lela/randiter/modular.h"

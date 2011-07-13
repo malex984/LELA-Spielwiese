@@ -1,4 +1,4 @@
-/* linbox/ring/coeffs.h
+/* lela/ring/coeffs.h
  * Copyright (C) 2011 Oleksandr Motsak
  *
  * Written by Oleksand Motsak <http://goo.gl/mcpzY>
@@ -11,10 +11,10 @@
 #ifndef __SINGULAR_ring_coeff_H
 #define __SINGULAR_ring_coeff_H
 
-#include <linbox/linbox-config.h>
-#include <linbox/ring/interface.h>
+#include <lela/lela-config.h>
+#include <lela/ring/interface.h>
 
-#ifdef __LINBOX_HAVE_LIBPOLYS
+#ifdef __LELA_HAVE_LIBPOLYS
 
 #include <omalloc/omalloc.h>
 #include <misc/auxiliary.h>
@@ -112,7 +112,7 @@ class CoeffDomain
       return x;
     }
 
-    Element &init (Element &x, const LinBox::integer &y) const
+    Element &init (Element &x, const LELA::integer &y) const
     {
       const int n = y.get_ui();
       return init(x, n );
@@ -149,9 +149,9 @@ class CoeffDomain
       return n;
     }
 
-    LinBox::integer &convert (LinBox::integer &x, const Element &y) const 
+    LELA::integer &convert (LELA::integer &x, const Element &y) const 
     {
-      int n; convert (n, y); return x = LinBox::integer(n);      
+      int n; convert (n, y); return x = LELA::integer(n);      
     }
 
     double &convert (double &x, const Element &y) const
@@ -195,10 +195,10 @@ class CoeffDomain
       return characteristic(c); // for the time being...
     }
     
-    LinBox::integer &cardinality (LinBox::integer &c) const
+    LELA::integer &cardinality (LELA::integer &c) const
     {
       int _c; cardinality(_c);
-      return c = LinBox::integer(_c);
+      return c = LELA::integer(_c);
     }
     
 
@@ -209,10 +209,10 @@ class CoeffDomain
      * c becomes a positive integer for all rings with finite characteristic,
      * and 0 to signify a ring of infinite characteristic.
      */
-    LinBox::integer &characteristic (LinBox::integer &c) const
+    LELA::integer &characteristic (LELA::integer &c) const
     {
       int _c; characteristic(_c);
-      return c = LinBox::integer(_c);
+      return c = LELA::integer(_c);
     }
     
     int &characteristic (int &c) const
@@ -492,6 +492,7 @@ class CoeffDomain
       return x;
     }
 
+   
     /** Inplace Multiplication using a property; x *= y
      *
      * This function does the same thing as above but takes a
@@ -503,14 +504,13 @@ class CoeffDomain
      * @param  x Property (reference returned).
      * @param  y ring element.
      */
-      template <class Iterator>
-          LinBox::Property<Iterator> &mulin (LinBox::Property<Iterator> &x, const Element &y) const
-      {
-        Element t = x;
-        mulin (t, y);
-        return x = t;
-      }
-    
+   template <class Iterator, class Accessor>
+    LELA::Property<Iterator, Accessor> &mulin (LELA::Property<Iterator, Accessor> &x, const Element &y) const
+    {
+      Element t = x;
+      mulin (t, y);
+      return x = t;
+    }
 
     /** Inplace Division; x /= y
      *
@@ -753,7 +753,7 @@ int initializeGMP(){ return 1; }
 
 
 
-#endif /* __LINBOX_HAVE_LIBPOLYS */
+#endif /* __LELA_HAVE_LIBPOLYS */
 
 #endif /* __SINGULAR_ring_coeff_H */
 

@@ -1,4 +1,4 @@
-/* linbox/ring/mymodular.h
+/* lela/ring/mymodular.h
  * Copyright (C) 2011 Oleksandr Motsak
  *
  * Written by Oleksand Motsak <http://goo.gl/mcpzY>
@@ -12,10 +12,10 @@
 #define __SINGULAR_ring_modular_H
 
 
-#include <linbox/linbox-config.h>
-#include <linbox/ring/coeffs.h>
+#include <lela/lela-config.h>
+#include <lela/ring/coeffs.h>
 
-#ifdef __LINBOX_HAVE_LIBPOLYS
+#ifdef __LELA_HAVE_LIBPOLYS
 
 template <class _Element> // Just ignore this template parameter
 class MyModular: public CoeffDomain
@@ -43,9 +43,8 @@ class MyModular: public CoeffDomain
       InitMe( _modulus );
     }
 
-    MyModular (const LinBox::integer &modulus): Base()
+    MyModular (const LELA::integer &modulus): Base()
     {
-//      linbox_check (ModularTraits<Element>::valid_modulus (modulus)); ModularTraits<Element>::init_element (_modulus, modulus);
       const unsigned long _modulus = modulus.get_ui();
       InitMe( _modulus );
     }
@@ -58,7 +57,7 @@ class MyModular: public CoeffDomain
     }
 };
 
-#include <linbox/randiter/modular.h>
+#include <lela/randiter/modular.h>
 
 
 template <class E>
@@ -81,18 +80,18 @@ class MyModularRandIter
 	 *             generator (default = 0)
 	 */
     MyModularRandIter (const MyModular<E> &F, 
-                     const LinBox::integer &size = 0, 
-                     const LinBox::integer &seed = 0)
+                     const LELA::integer &size = 0, 
+                     const LELA::integer &seed = 0)
         : _MT (seed.get_ui ()), _F (F), _size (size), _seed (seed.get_ui ())
     {
-      LinBox::integer cardinality;
+      LELA::integer cardinality;
 
       F.cardinality (cardinality);
 
       if ((_size == 0) || (_size > cardinality))
         _size = cardinality;
 
-      LinBox::commentator.report (10, INTERNAL_DESCRIPTION)
+      LELA::commentator.report (10, INTERNAL_DESCRIPTION)
           << "Created random generator with size " << _size 
           << " and seed " << _seed << std::endl;
     }
@@ -144,13 +143,13 @@ class MyModularRandIter
     }
 
   private:
-    LinBox::MersenneTwister _MT;
+    LELA::MersenneTwister _MT;
 
   /// Field in which arithmetic is done
     MyModular<E> _F;
 
   /// Sampling size
-    LinBox::integer _size;
+    LELA::integer _size;
 
   /// Seed
     long _seed;
@@ -164,7 +163,7 @@ class MyModular<E>::RandIter
   MyModularRandIter<E> _r;
 
   public:
-    RandIter (const MyModular<E> &F, const LinBox::integer &size = 0, const LinBox::integer &seed = 0)
+    RandIter (const MyModular<E> &F, const LELA::integer &size = 0, const LELA::integer &seed = 0)
         : _r (F, size, seed) {}
     RandIter (const MyModular<E>::RandIter &r)
         : _r (r._r) {}
@@ -187,24 +186,24 @@ class MyModular<E>::RandIter
 
 #else
 
-#include <linbox/ring/modular.h>
+#include <lela/ring/modular.h>
    
 template <class _Element> // Just ignore this template parameter
-class MyModular: public LinBox::Modular<_Element>
+class MyModular: public LELA::Modular<_Element>
 {
-  typedef LinBox::Modular<_Element> Base;
+  typedef LELA::Modular<_Element> Base;
   
 public:
   typedef typename Base::Element Element;
 
   MyModular (unsigned long modulus): Base(modulus) {}
 
-  MyModular (const LinBox::integer &modulus): Base(modulus) {}
+  MyModular (const LELA::integer &modulus): Base(modulus) {}
 
   MyModular (const MyModular<Element> &F): Base(F) {}
 };
 
 
-#endif /* __LINBOX_HAVE_LIBPOLYS */
+#endif /* __LELA_HAVE_LIBPOLYS */
 
 #endif /* __SINGULAR_ring_modular_H */

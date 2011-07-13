@@ -14,28 +14,28 @@
 
 #include "test-common.h"
 
-#include <linbox/ring/coeffs.h>
-#include <linbox/ring/mymodular.h>
+#include <lela/ring/coeffs.h>
+#include <lela/ring/mymodular.h>
 
-#include <linbox/util/commentator.h>
+#include <lela/util/commentator.h>
 
-#include <linbox/vector/sparse.h>
-#include <linbox/vector/stream.h>
+#include <lela/vector/sparse.h>
+#include <lela/vector/stream.h>
 
-#include <linbox/matrix/dense.h>
-#include <linbox/matrix/sparse.h>
+#include <lela/matrix/dense.h>
+#include <lela/matrix/sparse.h>
 
-#include <linbox/blas/context.h>
+#include <lela/blas/context.h>
 
-#include <linbox/blas/level1.h>
-#include <linbox/blas/level2.h>
-#include <linbox/blas/level3.h>
+#include <lela/blas/level1.h>
+#include <lela/blas/level2.h>
+#include <lela/blas/level3.h>
 
-#include <linbox/solutions/echelon-form.h>
+#include <lela/solutions/echelon-form.h>
 
-using namespace LinBox;
+using namespace LELA;
 
-#ifndef __LINBOX_HAVE_LIBPOLYS
+#ifndef __LELA_HAVE_LIBPOLYS
 #error Cannot be used without libpolys
 #endif 
 
