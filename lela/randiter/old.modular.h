@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "lela/integer.h"
-#include "lela/ring/modular.h"
+#include "lela/ring/old.modular.h"
 #include "lela/util/commentator.h"
 #include "lela/randiter/mersenne-twister.h"
 #include "lela/lela-config.h"

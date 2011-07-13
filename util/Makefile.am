@@ -5,8 +5,8 @@
 INCLUDES=-I$(top_srcdir) -I$(top_builddir)
 AM_CXXFLAGS = -Wall -O2 
 
-AM_CPPFLAGS= $(GMP_CFLAGS) $(PNG_CFLAGS) $(M4RI_CFLAGS)
-LDADD = $(GMP_LIBS)  $(PNG_LIBS) $(M4RI_LIBS) $(BLAS_LIBS) $(top_builddir)/lela/liblela.la
+AM_CPPFLAGS= $(LIBPOLYS_CFLAGS) $(GMP_CFLAGS) $(PNG_CFLAGS) $(M4RI_CFLAGS)
+LDADD = $(LIBPOLYS_LIBS) $(GMP_LIBS)  $(PNG_LIBS) $(M4RI_LIBS) $(BLAS_LIBS) $(top_builddir)/lela/liblela.la
 
 noinst_PROGRAMS = \
 	row-echelon-form \

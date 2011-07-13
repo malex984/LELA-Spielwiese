@@ -1,4 +1,4 @@
-/* lela/ring/modular.h
+/* lela/ring/old.modular.h
  * Copyright (C) 1999-2001 William J Turner,
  *               2001 Bradford Hovinen
  *
@@ -471,6 +471,7 @@ struct AllModules<Modular<Element> > : public StrassenModule<Modular<Element>, Z
 
 } // namespace LELA
 
+/*
 #include "lela/blas/level1-modular.h"
 #include "lela/blas/level2-modular.h"
 
@@ -478,8 +479,9 @@ struct AllModules<Modular<Element> > : public StrassenModule<Modular<Element>, Z
 #include "lela/blas/level2-modular.tcc"
 
 #include "lela/blas/level3-sw.h"
+*/
 
-#include "lela/randiter/modular.h"
+#include "lela/randiter/old.modular.h"
 
 #endif // __LELA_ring_modular_H
 

@@ -1,4 +1,4 @@
-/* lela/blas/level1-modular.h
+/* lela/blas/old.level1-modular.h
  * Copyright 2011 Bradford Hovinen <hovinen@gmail.com>
  *
  * Implementations of level 1 BLAS interface for Z/p
@@ -10,7 +10,7 @@
 #ifndef __BLAS_LEVEL1_MODULAR_H
 #define __BLAS_LEVEL1_MODULAR_H
 
-#include "lela/ring/modular.h"
+#include "lela/ring/old.modular.h"
 #include "lela/blas/context.h"
 #include "lela/vector/traits.h"
 #include "lela/blas/level1-ll.h"

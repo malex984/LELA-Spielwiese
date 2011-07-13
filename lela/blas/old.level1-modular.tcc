@@ -1,4 +1,4 @@
-/* lela/blas/level1-modular.tcc
+/* lela/blas/old.level1-modular.tcc
  * Copyright 2011 Bradford Hovinen <hovinen@gmail.com>
  *
  * Implementations of level 1 BLAS interface for Z/p
@@ -10,7 +10,7 @@
 #ifndef __BLAS_LEVEL1_MODULAR_TCC
 #define __BLAS_LEVEL1_MODULAR_TCC
 
-#include "lela/blas/level1-modular.h"
+#include "lela/blas/old.level1-modular.h"
 
 namespace LELA
 {

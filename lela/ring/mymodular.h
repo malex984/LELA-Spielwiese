@@ -57,8 +57,13 @@ class MyModular: public CoeffDomain
     }
 };
 
-#include <lela/randiter/modular.h>
+// #include <lela/randiter/modular.h>
 
+#include <iostream>
+#include <vector>
+
+#include <lela/randiter/mersenne-twister.h>
+#include <lela/util/commentator.h>
 
 template <class E>
 class MyModularRandIter
@@ -186,7 +191,8 @@ class MyModular<E>::RandIter
 
 #else
 
-#include <lela/ring/modular.h>
+// The following should be the only inclusion of the old stuff!
+#include <lela/ring/old.modular.h>
    
 template <class _Element> // Just ignore this template parameter
 class MyModular: public LELA::Modular<_Element>

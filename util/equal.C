@@ -12,7 +12,8 @@
 #include "lela/util/commentator.h"
 #include "lela/blas/context.h"
 #include "lela/ring/gf2.h"
-#include "lela/ring/modular.h"
+#include "lela/ring/mymodular.h"
+#include "lela/ring/old.modular.h"
 #include "lela/blas/level1.h"
 #include "lela/blas/level3.h"
 #include "lela/matrix/dense.h"
@@ -172,20 +173,20 @@ int main (int argc, char **argv)
 	else if (ring_type == RING_MODULAR) {
 		if (floatingPoint) {
 			if (ModularTraits<float>::valid_modulus (p))
-				return check_equal (Modular<float> (p), input1, input1_format, input2, input2_format);
+				return check_equal (MyModular<float> (p), input1, input1_format, input2, input2_format);
 			else if (ModularTraits<double>::valid_modulus (p))
-				return check_equal (Modular<double> (p), input1, input1_format, input2, input2_format);
+				return check_equal (MyModular<double> (p), input1, input1_format, input2, input2_format);
 			else
-				return check_equal (Modular<integer> (p), input1, input1_format, input2, input2_format);
+				return check_equal (MyModular<integer> (p), input1, input1_format, input2, input2_format);
 		} else {
 			if (ModularTraits<uint8>::valid_modulus (p))
-				return check_equal (Modular<uint8> (p), input1, input1_format, input2, input2_format);
+				return check_equal (MyModular<uint8> (p), input1, input1_format, input2, input2_format);
 			else if (ModularTraits<uint16>::valid_modulus (p))
-				return check_equal (Modular<uint16> (p), input1, input1_format, input2, input2_format);
+				return check_equal (MyModular<uint16> (p), input1, input1_format, input2, input2_format);
 			else if (ModularTraits<uint32>::valid_modulus (p))
-				return check_equal (Modular<uint32> (p), input1, input1_format, input2, input2_format);
+				return check_equal (MyModular<uint32> (p), input1, input1_format, input2, input2_format);
 			else
-				return check_equal (Modular<integer> (p), input1, input1_format, input2, input2_format);
+				return check_equal (MyModular<integer> (p), input1, input1_format, input2, input2_format);
 		}
 	}
 	else if (ring_type == RING_UNKNOWN) {

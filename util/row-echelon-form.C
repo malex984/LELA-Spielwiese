@@ -12,7 +12,8 @@
 #include "lela/util/commentator.h"
 #include "lela/blas/context.h"
 #include "lela/ring/gf2.h"
-#include "lela/ring/modular.h"
+#include "lela/ring/mymodular.h"
+#include "lela/ring/old.modular.h"
 #include "lela/blas/level3.h"
 #include "lela/solutions/echelon-form.h"
 #include "lela/solutions/echelon-form-gf2.h"
@@ -289,20 +290,20 @@ int main (int argc, char **argv)
 	else if (ring_type == RING_MODULAR) {
 		if (floatingPoint) {
 			if (ModularTraits<float>::valid_modulus (p))
-				return run_row_echelon_form (Modular<float> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
+				return run_row_echelon_form (MyModular<float> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
 			else if (ModularTraits<double>::valid_modulus (p))
-				return run_row_echelon_form (Modular<double> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
+				return run_row_echelon_form (MyModular<double> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
 			else
-				return run_row_echelon_form (Modular<integer> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
+				return run_row_echelon_form (MyModular<integer> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
 		} else {
 			if (ModularTraits<uint8>::valid_modulus (p))
-				return run_row_echelon_form (Modular<uint8> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
+				return run_row_echelon_form (MyModular<uint8> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
 			else if (ModularTraits<uint16>::valid_modulus (p))
-				return run_row_echelon_form (Modular<uint16> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
+				return run_row_echelon_form (MyModular<uint16> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
 			else if (ModularTraits<uint32>::valid_modulus (p))
-				return run_row_echelon_form (Modular<uint32> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
+				return run_row_echelon_form (MyModular<uint32> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
 			else
-				return run_row_echelon_form (Modular<integer> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
+				return run_row_echelon_form (MyModular<integer> (p), methodString, matrixType, reduced, input, input_format, output, output_format);
 		}
 	}
 	else if (ring_type == RING_UNKNOWN) {

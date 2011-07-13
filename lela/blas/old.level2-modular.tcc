@@ -1,4 +1,4 @@
-/* lela/blas/level2-modular.tcc
+/* lela/blas/old.level2-modular.tcc
  * Copyright 2011 Bradford Hovinen <hovinen@gmail.com>
  *
  * Implementations of level 2 BLAS interface for Z/p
@@ -12,7 +12,7 @@
 
 #include <algorithm>
 
-#include "lela/blas/level2-modular.h"
+#include "lela/blas/old.level2-modular.h"
 
 namespace LELA
 {

@@ -9,6 +9,9 @@ pkgincludesubdir=$(pkgincludedir)/util
 
 noinst_LTLIBRARIES=libutil.la
 
+AM_CPPFLAGS= $(LIBPOLYS_CFLAGS)
+LDADD = $(LIBPOLYS_LIBS)
+
 libutil_la_SOURCES=	\
 	timer.C		\
 	error.C		\

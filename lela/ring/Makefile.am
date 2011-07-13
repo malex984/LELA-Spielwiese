@@ -7,10 +7,9 @@ BASIC_HDRS =			\
 	interface.h		\
 	type-wrapper.h		\
 	gmp-rational.h		\
-	modular.h		\
-	gf2.h		\
-	coeffs.h		\
-	mymodular.h
+	gf2.h			\
+	old.modular.h		\
+	coeffs.h mymodular.h
 
 
 pkgincludesub_HEADERS =			\

@@ -40,8 +40,9 @@ BASIC_TESTS =  \
         test-strassen-winograd  \
 	test-elimination	\
 	test-gauss-jordan	\
-	test-faugere-lachartre  \
-        test-coeffs
+	test-faugere-lachartre  
+
+#        test-coeffs
 
 # a benchmarker, not to be included in check.
 BENCHMARKS =            \

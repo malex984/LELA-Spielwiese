@@ -9,11 +9,13 @@ AM_CXXFLAGS = -O2 -Wall -DDISABLE_COMMENTATOR $(GMP_CFLAGS) $(ATLAS_CFLAGS)
 BASIC_HDRS =				\
 	interface.h			\
 	gmp-rational.h			\
-	modular.h			\
 	type-wrapper.h			\
 	gf2.h				\
+	old.modular.h			\
 	nonzero.h			\
 	mersenne-twister.h
+
+# modular.h
 
 pkgincludesub_HEADERS =			\
 	$(BASIC_HDRS)

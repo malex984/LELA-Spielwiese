@@ -12,7 +12,8 @@
 #include "lela/util/commentator.h"
 #include "lela/blas/context.h"
 #include "lela/ring/gf2.h"
-#include "lela/ring/modular.h"
+#include "lela/ring/mymodular.h"
+#include "lela/ring/old.modular.h"
 #include "lela/blas/level1.h"
 #include "lela/blas/level3.h"
 #include "lela/matrix/dense.h"
@@ -207,20 +208,20 @@ int main (int argc, char **argv)
 	else if (ring_type == RING_MODULAR) {
 		if (floatingPoint) {
 			if (ModularTraits<float>::valid_modulus (p))
-				return run_diff (Modular<float> (p), input1, input1_format, input2, input2_format, output, output_format);
+				return run_diff (MyModular<float> (p), input1, input1_format, input2, input2_format, output, output_format);
 			else if (ModularTraits<double>::valid_modulus (p))
-				return run_diff (Modular<double> (p), input1, input1_format, input2, input2_format, output, output_format);
+				return run_diff (MyModular<double> (p), input1, input1_format, input2, input2_format, output, output_format);
 			else
-				return run_diff (Modular<integer> (p), input1, input1_format, input2, input2_format, output, output_format);
+				return run_diff (MyModular<integer> (p), input1, input1_format, input2, input2_format, output, output_format);
 		} else {
 			if (ModularTraits<uint8>::valid_modulus (p))
-				return run_diff (Modular<uint8> (p), input1, input1_format, input2, input2_format, output, output_format);
+				return run_diff (MyModular<uint8> (p), input1, input1_format, input2, input2_format, output, output_format);
 			else if (ModularTraits<uint16>::valid_modulus (p))
-				return run_diff (Modular<uint16> (p), input1, input1_format, input2, input2_format, output, output_format);
+				return run_diff (MyModular<uint16> (p), input1, input1_format, input2, input2_format, output, output_format);
 			else if (ModularTraits<uint32>::valid_modulus (p))
-				return run_diff (Modular<uint32> (p), input1, input1_format, input2, input2_format, output, output_format);
+				return run_diff (MyModular<uint32> (p), input1, input1_format, input2, input2_format, output, output_format);
 			else
-				return run_diff (Modular<integer> (p), input1, input1_format, input2, input2_format, output, output_format);
+				return run_diff (MyModular<integer> (p), input1, input1_format, input2, input2_format, output, output_format);
 		}
 	}
 	else if (ring_type == RING_UNKNOWN) {
