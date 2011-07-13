@@ -16,7 +16,7 @@
 
 #include <lela/blas/context.h>
 #include <lela/ring/gf2.h>
-#include <lela/ring/modular.h>
+#include <lela/ring/mymodular.h>
 #include <lela/matrix/dense.h>
 #include <lela/vector/stream.h>
 #include <lela/algorithms/strassen-winograd.h>
@@ -169,7 +169,7 @@ int main (int argc, char **argv)
 
 	parseArguments (argc, argv, args);
 
-	Modular<uint32> GFq (q);
+	MyModular<uint32> GFq (q);
 	GF2 gf2;
 
 	commentator.setBriefReportParameters (Commentator::OUTPUT_CONSOLE, false, false, false);
@@ -182,11 +182,11 @@ int main (int argc, char **argv)
 	std::ostringstream str;
 	str << "Running tests over GF(" << q << ")" << std::ends;
 
-	Context<Modular<uint32> > ctx_GFq (GFq);
+	Context<MyModular<uint32> > ctx_GFq (GFq);
 
-	RandomDenseStream<Modular<uint32>, DenseMatrix<uint32>::Row> stream_A_gfq (GFq, m, k);
-	RandomDenseStream<Modular<uint32>, DenseMatrix<uint32>::Row> stream_B_gfq (GFq, k, n);
-	RandomDenseStream<Modular<uint32>, DenseMatrix<uint32>::Row> stream_C_gfq (GFq, m, n);
+	RandomDenseStream<MyModular<uint32>, DenseMatrix<uint32>::Row> stream_A_gfq (GFq, m, k);
+	RandomDenseStream<MyModular<uint32>, DenseMatrix<uint32>::Row> stream_B_gfq (GFq, k, n);
+	RandomDenseStream<MyModular<uint32>, DenseMatrix<uint32>::Row> stream_C_gfq (GFq, m, n);
 
 	DenseMatrix<uint32> A_gfq (stream_A_gfq), B_gfq (stream_B_gfq), C_gfq (stream_C_gfq);
 

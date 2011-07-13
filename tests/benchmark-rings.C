@@ -16,7 +16,7 @@
 #include "lela/ring/PIR-ntl-ZZ_p.h"
 #endif
 
-#include "lela/ring/modular.h"
+#include "lela/ring/mymodular.h"
 #include "lela/ring/modular-int32.h"
 #include "lela/ring/modular-int.h"
 #include "lela/ring/modular-double.h"
@@ -32,6 +32,8 @@
 
 #ifdef __LELA_HAVE_LIDIA
 #include "lela/ring/lidia.h"
+
+
 #endif
 
 #include <iostream>
@@ -316,12 +318,12 @@ int main(int argc, char** argv) {
 	     << std::setw(12) << "axpy/(mul+add)"
 		 << std::endl;
 
-    doTest< Modular<int8> >( "Modular<int8>", prime, exp, iterations, fulltest );
-    doTest< Modular<int16> >( "Modular<int16>", prime, exp, iterations, fulltest );
-    doTest< Modular<int32> >( "Modular<int32>", prime, exp, iterations, fulltest );
-    doTest< Modular<int> >( "Modular<int>", prime, exp, iterations, fulltest );
-    doTest< Modular<double> >( "Modular<double>", prime, exp, iterations, fulltest );
-    doTest< Modular<float> >( "Modular<float>", prime, exp, iterations, fulltest );
+    doTest< MyModular<int8> >( "MyModular<int8>", prime, exp, iterations, fulltest );
+    doTest< MyModular<int16> >( "MyModular<int16>", prime, exp, iterations, fulltest );
+    doTest< MyModular<int32> >( "MyModular<int32>", prime, exp, iterations, fulltest );
+    doTest< MyModular<int> >( "MyModular<int>", prime, exp, iterations, fulltest );
+    doTest< MyModular<double> >( "MyModular<double>", prime, exp, iterations, fulltest );
+    doTest< MyModular<float> >( "MyModular<float>", prime, exp, iterations, fulltest );
 
 #ifdef __LELA_HAVE_NTL
     doTest< NTL_zz_p >( "NTL_zz_p", prime, exp, iterations, fulltest );
@@ -336,7 +338,7 @@ int main(int argc, char** argv) {
 //	doTest< GF2 >( "GF2", prime, exp, iterations, fulltest );
     doTest< GMPRationalField >( "GMPRationalField", prime, exp, iterations, fulltest ); 
 	//if (prime == 2)
-    	doTest< PIRModular<int32> >( "PIRModular<int32>", prime, exp, iterations, fulltest );
+    	doTest< PIRMyModular<int32> >( "PIRMyModular<int32>", prime, exp, iterations, fulltest );
     doTest< Local2_32 >( "Local2_32", prime, exp, iterations, fulltest );
 
 	return 0;

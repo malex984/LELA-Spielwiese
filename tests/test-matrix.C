@@ -7,7 +7,7 @@
  */
 
 #include "lela/ring/gf2.h"
-#include "lela/ring/modular.h"
+#include "lela/ring/mymodular.h"
 #include "lela/blas/context.h"
 #include "lela/blas/level1.h"
 #include "lela/blas/level3.h"
@@ -96,7 +96,7 @@ int main (int argc, char **argv)
 
 	parseArguments (argc, argv, args);
 
-	typedef Modular<uint32> Field;
+	typedef MyModular<uint32> Field;
 	typedef Field::Element Element;
 
 	Field F (q);

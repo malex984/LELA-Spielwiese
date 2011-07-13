@@ -13,7 +13,7 @@
 #include "lela/util/commentator.h"
 #include "lela/blas/context.h"
 #include "lela/field/gf2.h"
-#include "lela/field/modular.h"
+#include "lela/field/mymodular.h"
 #include "lela/matrix/dense.h"
 #include "lela/matrix/sparse.h"
 #include "lela/vector/stream.h"
@@ -184,12 +184,12 @@ int main (int argc, char **argv)
 #endif // Disabled
 
 	if (enable_uint8) {
-		Modular<uint8> F (q_uint8);
+		MyModular<uint8> F (q_uint8);
 		runBenchmarks (F);
 	}
 
 	if (enable_uint32) {
-		Modular<uint32> F (q_uint32);
+		MyModular<uint32> F (q_uint32);
 		runBenchmarks (F);
 	}
 

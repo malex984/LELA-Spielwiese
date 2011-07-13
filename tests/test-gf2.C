@@ -7,7 +7,7 @@
  * 2002-04-10 Bradford Hovinen <hovinen@cis.udel.edu>
  *
  * Rename from test-large-modular.C to test-modular.C; made other updates in
- * accordance with changes to Modular interace.
+ * accordance with changes to MyModular interace.
  * ------------------------------------
  *
  * See COPYING for license information.
@@ -22,7 +22,7 @@
 #include <queue>
 
 #include "lela/ring/gf2.h"
-#include "lela/ring/modular.h"
+#include "lela/ring/mymodular.h"
 #include "lela/blas/context.h"
 
 #include "test-generic-for-quad.h"

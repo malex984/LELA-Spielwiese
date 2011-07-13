@@ -14,7 +14,7 @@
  * 2002-04-10 Bradford Hovinen <hovinen@cis.udel.edu>
  *
  * Rename from test-large-modular.C to test-modular.C; made other updates in
- * accordance with changes to Modular interace.
+ * accordance with changes to MyModular interace.
  * ------------------------------------
  *
  * See COPYING for license information.
@@ -28,7 +28,7 @@
 #include <vector>
 #include <queue>
 
-#include "lela/ring/modular.h"
+#include "lela/ring/mymodular.h"
 
 #include "test-common.h"
 #include "test-ring.h"
@@ -47,36 +47,36 @@ int main (int argc, char **argv)
 
 	parseArguments (argc, argv, args);
 
-	commentator.start("Modular<double> ring test suite", "Modular<double>");
+	commentator.start("MyModular<double> ring test suite", "MyModular<double>");
 	bool pass = true;
 
-	//Modular<double> F2 (2); 
-	Modular<double> F3 (3); 
-	Modular<double> F5 (5); 
-	Modular<double> F7 (7); 
-	Modular<double> F11 (11); 
-	Modular<double> F (32749); 
-	Modular<double> G (65521); 
-	//Modular<double> H (1099511627689); 
+	//MyModular<double> F2 (2); 
+	MyModular<double> F3 (3); 
+	MyModular<double> F5 (5); 
+	MyModular<double> F7 (7); 
+	MyModular<double> F11 (11); 
+	MyModular<double> F (32749); 
+	MyModular<double> G (65521); 
+	//MyModular<double> H (1099511627689); 
 
 	// Make sure some more detailed messages get printed
 	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDepth (4);
 	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDetailLevel (Commentator::LEVEL_UNIMPORTANT);
 	std::ostream& report = commentator.report();
 	report << "Ring F2" << std::endl;
-	//if (!runRingTests (F2,  "Modular<double>",  iterations, false)) pass = false;
+	//if (!runRingTests (F2,  "MyModular<double>",  iterations, false)) pass = false;
 	report << "Ring F3" << std::endl;
-	if (!runRingTests (F3,  "Modular<double>",  iterations, false)) pass = false;
+	if (!runRingTests (F3,  "MyModular<double>",  iterations, false)) pass = false;
 	report << "Ring F5" << std::endl;
-	if (!runRingTests (F5,  "Modular<double>",  iterations, false)) pass = false;
+	if (!runRingTests (F5,  "MyModular<double>",  iterations, false)) pass = false;
 	report << "Ring F7" << std::endl;
-	if (!runRingTests (F7,  "Modular<double>",  iterations, false)) pass = false;
+	if (!runRingTests (F7,  "MyModular<double>",  iterations, false)) pass = false;
 	report << "Ring F11" << std::endl;
-	if (!runRingTests (F11,  "Modular<double>",  iterations, false)) pass = false;
+	if (!runRingTests (F11,  "MyModular<double>",  iterations, false)) pass = false;
 	report << "Ring F" << std::endl;
-	if (!runRingTests (F,  "Modular<double>",  iterations, false)) pass = false;
+	if (!runRingTests (F,  "MyModular<double>",  iterations, false)) pass = false;
 	report << "Ring G" << std::endl;
-	if (!runRingTests (G,  "Modular<double>",  iterations, false)) pass = false;
+	if (!runRingTests (G,  "MyModular<double>",  iterations, false)) pass = false;
 
 	commentator.stop(MSG_STATUS (pass));
 	return pass ? 0 : -1;

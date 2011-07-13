@@ -15,9 +15,10 @@
 #include <fstream>
 #include <vector>
 
+<<<<<<< HEAD
 #include "lela/util/commentator.h"
-#include "lela/ring/modular.h"
-#include "lela/randiter/modular.h"
+#include "lela/ring/mymodular.h"
+// #include "lela/randiter/modular.h"
 #include "lela/randiter/nonzero.h"
 
 #include "test-common.h"
@@ -89,7 +90,7 @@ int main (int argc, char **argv)
 	};
 
 	parseArguments (argc, argv, args);
-	Modular<uint32> F (q);
+	MyModular<uint32> F (q);
 
 	srand (time (NULL));
 

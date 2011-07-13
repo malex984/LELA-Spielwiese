@@ -12,7 +12,7 @@
 
 #include "lela/util/commentator.h"
 #include "lela/blas/context.h"
-#include "lela/ring/modular.h"
+#include "lela/ring/mymodular.h"
 #include "lela/matrix/dense.h"
 #include "lela/matrix/sparse.h"
 #include "lela/vector/stream.h"
@@ -50,7 +50,7 @@ int main (int argc, char **argv)
 
 	parseArguments (argc, argv, args);
 
-	typedef Modular<uint8> Ring;
+	typedef MyModular<uint8> Ring;
 	typedef Ring::Element Element;
 
 	Ring F (q);
@@ -63,8 +63,8 @@ int main (int argc, char **argv)
 
 	commentator.start ("BLAS GenericModule test suite", "BLASGenericModule");
 
-	if (!testBLAS1 (ctx, "Modular <uint32>", l, iterations)) pass = false;
-	if (!testBLAS1RepsConsistency (ctx, "Modular <uint32>", l, iterations)) pass = false;
+	if (!testBLAS1 (ctx, "MyModular <uint32>", l, iterations)) pass = false;
+	if (!testBLAS1RepsConsistency (ctx, "MyModular <uint32>", l, iterations)) pass = false;
 
 	RandomDenseStream<Ring, Vector<Ring>::Dense> stream_v1 (F, l, 1);
 	RandomDenseStream<Ring, Vector<Ring>::Dense> stream_v2 (F, m, 1);
@@ -119,7 +119,7 @@ int main (int argc, char **argv)
 		pass = false;
 
 
-	testBLAS2Consistency(ctx, "Modular<uint8>", m, n, k);
+	testBLAS2Consistency(ctx, "MyModular<uint8>", m, n, k);
 
 
 	commentator.stop (MSG_STATUS (pass));

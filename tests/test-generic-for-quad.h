@@ -25,7 +25,7 @@
 
 #include "test-common.h" 
 
-/* Modular exponentiation */
+/* MyModular exponentiation */
 using namespace std;
 using namespace LELA;
 

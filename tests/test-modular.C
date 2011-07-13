@@ -10,7 +10,7 @@
  * 2002-04-10 Bradford Hovinen <hovinen@cis.udel.edu>
  *
  * Rename from test-large-modular.C to test-modular.C; made other updates in
- * accordance with changes to Modular interace.
+ * accordance with changes to MyModular interace.
  * ------------------------------------
  *
  * See COPYING for license information.
@@ -24,7 +24,7 @@
 #include <vector>
 #include <queue>
 
-#include "lela/ring/modular.h"
+#include "lela/ring/mymodular.h"
 
 #include "test-common.h"
 #include "test-ring.h"
@@ -58,29 +58,29 @@ int main (int argc, char **argv)
 
 	parseArguments (argc, argv, args);
 
-	commentator.start("Modular test suite", "Modular ");
+	commentator.start("MyModular test suite", "MyModular ");
 	bool pass = true;
 
-	Modular<integer> F_integer (q1);
-	Modular<uint32> F_uint32 (q2.get_ui ());
-	Modular<uint16> F_uint16 (q3.get_ui ());
-	Modular<uint8> F_uint8 ((uint8) q4);
-	Modular<float> F_float ((float) q4);
+	MyModular<integer> F_integer (q1);
+	MyModular<uint32> F_uint32 (q2.get_ui ());
+	MyModular<uint16> F_uint16 (q3.get_ui ());
+	MyModular<uint8> F_uint8 ((uint8) q4);
+	MyModular<float> F_float ((float) q4);
 
 	// Make sure some more detailed messages get printed
 	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDepth (6);
 	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDetailLevel (Commentator::LEVEL_UNIMPORTANT);
 
-	if (!runRingTests (F_integer, "Modular<integer>", iterations, false)) pass = false;
-	if (!runRingTests (F_uint32,  "Modular<uint32>",  iterations, false)) pass = false;
-	if (!runRingTests (F_uint16,  "Modular<uint16>",  iterations, false)) pass = false;
-	if (!runRingTests (F_uint8,  "Modular<uint8>",  iterations, false)) pass = false;
-	if (!runRingTests (F_float,  "Modular<float>",  iterations, false)) pass = false;
+	if (!runRingTests (F_integer, "MyModular<integer>", iterations, false)) pass = false;
+	if (!runRingTests (F_uint32,  "MyModular<uint32>",  iterations, false)) pass = false;
+	if (!runRingTests (F_uint16,  "MyModular<uint16>",  iterations, false)) pass = false;
+	if (!runRingTests (F_uint8,  "MyModular<uint8>",  iterations, false)) pass = false;
+	if (!runRingTests (F_float,  "MyModular<float>",  iterations, false)) pass = false;
 
-	//if (!testRandomIterator (F_integer, "Modular<integer>", trials, categories, hist_level)) pass = false;
-	if (!testRandomIterator (F_uint32,  "Modular<uint32>", trials, categories, hist_level)) pass = false;
-	if (!testRandomIterator (F_uint16,  "Modular<uint16>", trials, categories, hist_level)) pass = false;
-	if (!testRandomIterator (F_uint8,  "Modular<uint8>", trials, categories, hist_level)) pass = false;
+	//if (!testRandomIterator (F_integer, "MyModular<integer>", trials, categories, hist_level)) pass = false;
+	if (!testRandomIterator (F_uint32,  "MyModular<uint32>", trials, categories, hist_level)) pass = false;
+	if (!testRandomIterator (F_uint16,  "MyModular<uint16>", trials, categories, hist_level)) pass = false;
+	if (!testRandomIterator (F_uint8,  "MyModular<uint8>", trials, categories, hist_level)) pass = false;
 
 	commentator.stop (MSG_STATUS (pass));
 	return pass ? 0 : -1;

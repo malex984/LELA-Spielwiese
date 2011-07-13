@@ -15,7 +15,7 @@
 
 #include <lela/blas/context.h>
 #include <lela/ring/gf2.h>
-#include <lela/ring/modular.h>
+#include <lela/ring/mymodular.h>
 #include <lela/matrix/dense.h>
 #include <lela/vector/stream.h>
 #include <lela/algorithms/gauss-jordan.h>
@@ -113,7 +113,7 @@ int main (int argc, char **argv)
 
 	parseArguments (argc, argv, args);
 
-	Modular<uint32> GFq (q);
+	MyModular<uint32> GFq (q);
 	GF2 gf2;
 
 	commentator.setBriefReportParameters (Commentator::OUTPUT_CONSOLE, false, false, false);
