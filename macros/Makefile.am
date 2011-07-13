@@ -15,4 +15,5 @@ EXTRA_DIST=\
 	m4ri-check.m4		\
 	config-header.m4	\
 	lela-misc.m4		\
+	libpolys-check.m4	\
 	maple-check-version.mpl
