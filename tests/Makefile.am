@@ -34,15 +34,13 @@ BASIC_TESTS =  \
         test-randiter-nonzero   \
         test-subiterator        \
         test-subvector          \
-        test-bit-subvector        \
-        test-hybrid-vector        \
-        test-unparametric-ring        \
-        test-coeffs \
-        test-elimination        \
-        test-gauss-jordan        \
-        test-faugere-lachartre \ 
-        test-strassen-winograd 
-
+	test-bit-subvector	\
+	test-hybrid-vector	\
+        test-type-wrapper-ring	\
+	test-elimination	\
+	test-gauss-jordan	\
+	test-faugere-lachartre  \
+        test-coeffs
 # test-strassen-winograd cannot be compiled :(((
 
 # a benchmarker, not to be included in check.
@@ -75,8 +73,8 @@ test_gmp_rational_SOURCES =               \
         test-gmp-rational.C               \
         test-common.C
 
-test_unparametric_ring_SOURCES =        \
-        test-unparametric-ring.C        \
+test_type_wrapper_ring_SOURCES =        \
+        test-type-wrapper-ring.C        \
         test-common.C
 
 test_randiter_nonzero_SOURCES =          \
