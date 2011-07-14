@@ -44,8 +44,7 @@ namespace LELA
  * std::vector<std::pair<index_type, element_type> >, a vector of
  * index-entry pairs. Here index_type is an integral type giving the
  * index of a given entry and element_type is the type of the
- * underlying field-element. It must include appropriate typedefs for
- * index_type and element_type. Indices must be in strictly ascending
+ * underlying field-element. Indices must be in strictly ascending
  * order and zero is not allowed as the element in a pair (such an
  * entry should be removed from the vector). The class @ref
  * SparseVector implements this interface.
@@ -483,8 +482,16 @@ public:
 		inline bool operator () (size_t i, const PairType &j) const
 			{ return i < j.first; }
 
-		template<typename PairType1, typename PairType2>
-		inline bool operator () (const PairType1 &i, const PairType2 &j) const
+		template<typename PairType, typename T1, typename T2>
+		inline bool operator () (const PairType &i, const std::pair<T1, T2> &j) const
+			{ return i.first < j.first; }
+
+		template<typename T1, typename T2, typename PairType>
+		inline bool operator () (const std::pair<T1, T2> &i, const PairType &j) const
+			{ return i.first < j.first; }
+
+		template<typename PairType>
+		inline bool operator () (const PairType &i, const PairType &j) const
 			{ return i.first < j.first; }
 	};
 
