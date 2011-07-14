@@ -24,6 +24,7 @@ AC_ARG_WITH(gmp,
 	        fi],
 		[GMP_HOME_PATH="${DEFAULT_CHECKING_PATH}"])
 
+echo "GMP_HOME_PATH: $GMP_HOME_PATH"
 min_gmp_version=ifelse([$1], ,1.0,$1)
 
 dnl Check for existence
@@ -38,10 +39,10 @@ for GMP_HOME in ${GMP_HOME_PATH}
 
 		if test "x$GMP_HOME" != "x/usr"; then
 			GMP_CFLAGS="-I${GMP_HOME}/include"
-			GMP_LIBS="-L${GMP_HOME}/lib -lgmp -lgmpxx"	
+			GMP_LIBS="-L${GMP_HOME}/lib -lgmp"	
 		else
 			GMP_CFLAGS=
-			GMP_LIBS="-lgmp -lgmpxx"
+			GMP_LIBS="-lgmp"		
 		fi
 	
 		CFLAGS="${CFLAGS} ${GMP_CFLAGS}"

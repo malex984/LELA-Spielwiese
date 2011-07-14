@@ -10,15 +10,15 @@ AC_ARG_WITH(default,
 ],
 	    [if test "$withval" = yes ; then
 			echo "Default path = /usr /usr/local"
-			DEFAULT_CHECKING_PATH="/usr /usr/local"
+			DEFAULT_CHECKING_PATH="/usr /usr/local /sw /opt/local"
 	      else
 			echo "Default path = $withval /usr /usr/local"
-			DEFAULT_CHECKING_PATH="$withval /usr /usr/local"
+			DEFAULT_CHECKING_PATH="$withval /usr /usr/local /sw /opt/local"
 	     fi
 	     ],
 	     [
 		echo "Default path = /usr /usr/local"
-		DEFAULT_CHECKING_PATH="/usr /usr/local"
+		DEFAULT_CHECKING_PATH="/usr /usr/local /sw /opt/local"
              ])
 
 

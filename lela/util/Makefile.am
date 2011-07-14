@@ -5,6 +5,9 @@ INCLUDES=-I$(top_srcdir) -I$(top_builddir)
 
 AM_CXXFLAGS=-Wall -O2
 
+AM_CPPFLAGS= $(GMP_CFLAGS)
+LDADD = $(GMP_LIBS)
+
 pkgincludesubdir=$(pkgincludedir)/util
 
 noinst_LTLIBRARIES=libutil.la
