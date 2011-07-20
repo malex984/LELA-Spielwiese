@@ -495,7 +495,7 @@ int main (int argc, char **argv)
 
 //  pass = testAdd () && pass;
 
-  feInitResources(argv[0]);
+  feInitResources( __LELA_LIBPOLYS_HOME );
 
   StringSetS("ressources in use (as reported by feStringAppendResources(0):\n");
   feStringAppendResources(0);

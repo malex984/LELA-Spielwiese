@@ -113,11 +113,12 @@ int main (int argc, char **argv)
 
 	parseArguments (argc, argv, args);
    
-        typedef MyModular<uint32> Ring;
+        typedef MyModular<float> Ring;
         typedef Ring::Element Element;
    
 	Ring GFq (q);
-	GF2 gf2;
+
+        GF2 gf2;
 
 	commentator.setBriefReportParameters (Commentator::OUTPUT_CONSOLE, false, false, false);
 	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDepth (5);

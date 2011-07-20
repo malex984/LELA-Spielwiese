@@ -231,6 +231,7 @@ template <class Element, class Vector>
 struct ElementVectorTraits
 {
 	typedef typename DefaultVectorTraits<Vector>::RepresentationType RepresentationType;
+	typedef typename DefaultVectorTraits<Vector>::StorageType StorageType;
 	typedef typename DefaultVectorTraits<Vector>::ContainerType ContainerType;
 	typedef typename DefaultVectorTraits<Vector>::SubvectorType SubvectorType;
 	typedef typename DefaultVectorTraits<Vector>::ConstSubvectorType ConstSubvectorType;
@@ -245,6 +246,7 @@ template <class Ring, class Vector>
 struct VectorTraits
 {
 	typedef typename ElementVectorTraits<typename Ring::Element, Vector>::RepresentationType RepresentationType;
+	typedef typename ElementVectorTraits<typename Ring::Element, Vector>::StorageType StorageType;
 	typedef typename ElementVectorTraits<typename Ring::Element, Vector>::ContainerType ContainerType;
 	typedef typename ElementVectorTraits<typename Ring::Element, Vector>::SubvectorType SubvectorType;
 	typedef typename ElementVectorTraits<typename Ring::Element, Vector>::ConstSubvectorType ConstSubvectorType;
@@ -258,6 +260,7 @@ template <class Vector>
 struct ElementVectorTraits<bool, Vector>
 {
 	typedef typename GF2VectorTraits<Vector>::RepresentationType RepresentationType;
+	typedef typename GF2VectorTraits<Vector>::StorageType StorageType;
 	typedef typename GF2VectorTraits<Vector>::ContainerType ContainerType;
 	typedef typename GF2VectorTraits<Vector>::SubvectorType SubvectorType;
 	typedef typename GF2VectorTraits<Vector>::ConstSubvectorType ConstSubvectorType;
@@ -328,24 +331,24 @@ class VectorUtils
 			return false;
 	}
 
-	template <class Element, class Vector>
-	static inline void appendEntrySpecialised (Vector &v, const Element &a, size_t i, VectorRepresentationTypes::Dense)
+	template <class Ring, class Vector>
+	static inline void appendEntrySpecialised (const Ring &R, Vector &v, const typename Ring::Element &a, size_t i, VectorRepresentationTypes::Dense)
+		{ R.assign (v[i], a); }
+
+	template <class Ring, class Vector>
+	static inline void appendEntrySpecialised (const Ring &R, Vector &v, const typename Ring::Element &a, size_t i, VectorRepresentationTypes::Sparse)
+		{ v.push_back (typename Vector::value_type (i, typename Ring::Element ())); R.assign (v.back ().second, a); }
+
+	template <class Ring, class Vector>
+	static inline void appendEntrySpecialised (const Ring &R, Vector &v, const typename Ring::Element &a, size_t i, VectorRepresentationTypes::Dense01)
 		{ v[i] = a; }
 
-	template <class Element, class Vector>
-	static inline void appendEntrySpecialised (Vector &v, const Element &a, size_t i, VectorRepresentationTypes::Sparse)
-		{ v.push_back (typename Vector::value_type (i, a)); }
-
-	template <class Element, class Vector>
-	static inline void appendEntrySpecialised (Vector &v, const Element &a, size_t i, VectorRepresentationTypes::Dense01)
-		{ v[i] = a; }
-
-	template <class Element, class Vector>
-	static inline void appendEntrySpecialised (Vector &v, const Element &a, size_t i, VectorRepresentationTypes::Sparse01)
+	template <class Ring, class Vector>
+	static inline void appendEntrySpecialised (const Ring &R, Vector &v, const typename Ring::Element &a, size_t i, VectorRepresentationTypes::Sparse01)
 		{ v.push_back (i); }
 
-	template <class Element, class Vector>
-	static inline void appendEntrySpecialised (Vector &v, const Element &a, size_t i, VectorRepresentationTypes::Hybrid01)
+	template <class Ring, class Vector>
+	static inline void appendEntrySpecialised (const Ring &R, Vector &v, const typename Ring::Element &a, size_t i, VectorRepresentationTypes::Hybrid01)
 	{
 		if (v.empty () || (i >> LELA::WordTraits<typename Vector::word_type>::logof_size) != v.back ().first)
 			v.push_back (typename Vector::value_type (i >> LELA::WordTraits<typename Vector::word_type>::logof_size,
@@ -478,6 +481,18 @@ public:
 		inline bool operator () (const PairType &i, uint64 j) const
 			{ return i.first < j; }
 
+		template<typename T1, typename T2>
+		inline bool operator () (const std::pair<T1, T2> &i, uint16 j) const
+			{ return i.first < j; }
+
+		template<typename T1, typename T2>
+		inline bool operator () (const std::pair<T1, T2> &i, uint32 j) const
+			{ return i.first < j; }
+
+		template<typename T1, typename T2>
+		inline bool operator () (const std::pair<T1, T2> &i, uint64 j) const
+			{ return i.first < j; }
+
 		template<typename PairType>
 		inline bool operator () (size_t i, const PairType &j) const
 			{ return i < j.first; }
@@ -488,6 +503,10 @@ public:
 
 		template<typename T1, typename T2, typename PairType>
 		inline bool operator () (const std::pair<T1, T2> &i, const PairType &j) const
+			{ return i.first < j.first; }
+
+		template<typename T1, typename T2>
+		inline bool operator () (const std::pair<T1, T2> &i, const std::pair<T1, T2> &j) const
 			{ return i.first < j.first; }
 
 		template<typename PairType>
@@ -517,9 +536,9 @@ public:
 	 * @param a Element to be appended
 	 * @param i Index at which to append entry
 	 */
-	template <class Element, class Vector>
-	static inline void appendEntry (Vector &v, const Element &a, size_t i)
-		{ return appendEntrySpecialised (v, a, i, typename ElementVectorTraits<Element, Vector>::RepresentationType ()); }
+	template <class Ring, class Vector>
+	static inline void appendEntry (const Ring &R, Vector &v, const typename Ring::Element &a, size_t i)
+		{ return appendEntrySpecialised (R, v, a, i, typename VectorTraits<Ring, Vector>::RepresentationType ()); }
 
 	/** Ensure that the vector v is defined over the free module of rank n */
 	template <class Ring, class Vector>
@@ -555,6 +574,7 @@ public:
 
 // Forward declarations of types we're about to use
 template <typename Iterator, typename ConstIterator = Iterator> class Subvector;
+template <typename Iterator> class Subiterator;
 template <class Element, class IndexVector = std::vector<uint32>, class ElementVector = std::vector<Element> > class SparseVector;
 template <class Vector, class Trait> class SparseSubvector;
 
@@ -564,10 +584,10 @@ struct DefaultVectorTraits< std::vector<Element> >
 	typedef VectorRepresentationTypes::Dense RepresentationType;
 	typedef VectorStorageTypes::Real StorageType;
 	typedef std::vector<Element> ContainerType;
-	typedef Subvector<typename std::vector<Element>::iterator, typename std::vector<Element>::const_iterator> SubvectorType;
-	typedef Subvector<typename std::vector<Element>::const_iterator, typename std::vector<Element>::const_iterator> ConstSubvectorType;
-	typedef Subvector<typename std::vector<Element>::iterator, typename std::vector<Element>::const_iterator> AlignedSubvectorType;
-	typedef Subvector<typename std::vector<Element>::const_iterator, typename std::vector<Element>::const_iterator> ConstAlignedSubvectorType;
+	typedef Subvector<Subiterator<typename std::vector<Element>::iterator>, Subiterator<typename std::vector<Element>::const_iterator> > SubvectorType;
+	typedef Subvector<Subiterator<typename std::vector<Element>::const_iterator>, Subiterator<typename std::vector<Element>::const_iterator> > ConstSubvectorType;
+	typedef Subvector<Subiterator<typename std::vector<Element>::iterator>, Subiterator<typename std::vector<Element>::const_iterator> > AlignedSubvectorType;
+	typedef Subvector<Subiterator<typename std::vector<Element>::const_iterator>, Subiterator<typename std::vector<Element>::const_iterator> > ConstAlignedSubvectorType;
 	static const int align = 1;
 };
 
@@ -581,6 +601,32 @@ struct DefaultVectorTraits< const std::vector<Element> >
 	typedef Subvector<typename std::vector<Element>::const_iterator, typename std::vector<Element>::const_iterator> ConstSubvectorType;
 	typedef Subvector<typename std::vector<Element>::iterator, typename std::vector<Element>::const_iterator> AlignedSubvectorType;
 	typedef Subvector<typename std::vector<Element>::const_iterator, typename std::vector<Element>::const_iterator> ConstAlignedSubvectorType;
+	static const int align = 1;
+};
+
+template <class index_type, class Element>
+struct DefaultVectorTraits< std::vector<std::pair<index_type, Element> > >
+{ 
+	typedef VectorRepresentationTypes::Sparse RepresentationType;
+	typedef VectorStorageTypes::Real StorageType;
+	typedef std::vector<std::pair<index_type, Element> > ContainerType;
+	typedef SparseSubvector<ContainerType, VectorRepresentationTypes::Sparse> SubvectorType;
+	typedef SparseSubvector<const ContainerType, VectorRepresentationTypes::Sparse> ConstSubvectorType;
+	typedef SparseSubvector<ContainerType, VectorRepresentationTypes::Sparse> AlignedSubvectorType;
+	typedef SparseSubvector<const ContainerType, VectorRepresentationTypes::Sparse> ConstAlignedSubvectorType;
+	static const int align = 1;
+};
+
+template <class index_type, class Element>
+struct DefaultVectorTraits< const std::vector<std::pair<index_type, Element> > >
+{ 
+	typedef VectorRepresentationTypes::Sparse RepresentationType;
+	typedef VectorStorageTypes::Real StorageType;
+	typedef std::vector<std::pair<index_type, Element> > ContainerType;
+	typedef SparseSubvector<const ContainerType, VectorRepresentationTypes::Sparse> SubvectorType;
+	typedef SparseSubvector<const ContainerType, VectorRepresentationTypes::Sparse> ConstSubvectorType;
+	typedef SparseSubvector<const ContainerType, VectorRepresentationTypes::Sparse> AlignedSubvectorType;
+	typedef SparseSubvector<const ContainerType, VectorRepresentationTypes::Sparse> ConstAlignedSubvectorType;
 	static const int align = 1;
 };
 

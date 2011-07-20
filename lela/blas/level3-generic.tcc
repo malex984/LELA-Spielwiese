@@ -29,24 +29,24 @@ namespace BLAS3
 
 template <class Ring>
 template <class Vector, class Iterator>
-void _copy<Ring, typename GenericModule<Ring>::Tag>::append_entries_spec (const Vector &v, size_t idx, Iterator begin, Iterator end,
+void _copy<Ring, typename GenericModule<Ring>::Tag>::append_entries_spec (const Ring &R, const Vector &v, size_t idx, Iterator begin, Iterator end,
 									  VectorRepresentationTypes::Dense)
 {
 	typename Vector::const_iterator i_v;
 
 	for (i_v = v.begin (); i_v != v.end (); ++i_v, ++begin)
-		VectorUtils::appendEntry (*begin, *i_v, idx);
+		VectorUtils::appendEntry (R, *begin, *i_v, idx);
 }
 
 template <class Ring>
 template <class Vector, class Iterator>
-void _copy<Ring, typename GenericModule<Ring>::Tag>::append_entries_spec (const Vector &v, size_t idx, Iterator begin, Iterator end,
+void _copy<Ring, typename GenericModule<Ring>::Tag>::append_entries_spec (const Ring &R, const Vector &v, size_t idx, Iterator begin, Iterator end,
 									  VectorRepresentationTypes::Sparse)
 {
 	typename Vector::const_iterator i_v;
 
 	for (i_v = v.begin (); i_v != v.end (); ++i_v)
-		VectorUtils::appendEntry (*(begin + i_v->first), i_v->second, idx);
+		VectorUtils::appendEntry (R, *(begin + i_v->first), i_v->second, idx);
 }
 
 template <class Ring>
@@ -83,7 +83,7 @@ Matrix2 &_copy<Ring, typename GenericModule<Ring>::Tag>::copy_impl
 	size_t idx;
 
 	for (i = A.rowBegin (), idx = 0; i != A.rowEnd (); ++i, ++idx)
-		append_entries (*i, idx, B.colBegin (), B.colEnd ());
+		append_entries (F, *i, idx, B.colBegin (), B.colEnd ());
 
 	return B;
 }
@@ -101,7 +101,7 @@ Matrix2 &_copy<Ring, typename GenericModule<Ring>::Tag>::copy_impl
 	size_t idx;
 
 	for (i = A.colBegin (), idx = 0; i != A.colEnd (); ++i, ++idx)
-		append_entries (*i, idx, B.rowBegin (), B.rowEnd ());
+		append_entries (F, *i, idx, B.rowBegin (), B.rowEnd ());
 
 	return B;
 }
@@ -261,9 +261,14 @@ Matrix3 &_gemm<Ring, typename GenericModule<Ring>::Tag>::gemm_impl
 				F.mulin (cij, b);
 				F.axpyin (cij, a, d);
 				C.setEntry (row, col, cij);
+
+				if (F.isZero (cij))
+					C.eraseEntry (row, col);
 			} else {
 				F.mulin (d, a);
-				C.setEntry (row, col, d);
+
+				if (!F.isZero (d))
+					C.setEntry (row, col, d);
 			}
 		}
 	}
@@ -287,16 +292,15 @@ Matrix3 &_gemm<Ring, typename GenericModule<Ring>::Tag>::gemm_impl
 
 	_scal<Ring, typename Modules::Tag>::op (F, M, b, C);
 
-	for (i = A.colBegin (); i != A.colEnd (); ++i)
-		for (j = B.rowBegin (); j != B.rowEnd (); ++j)
-			BLAS2::_ger<Ring, typename Modules::Tag>::op (F, M, a, *i, *j, C);
+	for (i = A.colBegin (), j = B.rowBegin (); i != A.colEnd (); ++i, ++j)
+		BLAS2::_ger<Ring, typename Modules::Tag>::op (F, M, a, *i, *j, C);
 
 	return C;
 }
 
 template <class Ring>
 template <class Modules, class Matrix1, class Matrix2>
-Matrix2 &_trmm<Ring, typename GenericModule<Ring>::Tag>::op
+Matrix2 &_trmm<Ring, typename GenericModule<Ring>::Tag>::trmm_impl
 	(const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne)
 {
 	lela_check (A.coldim () == B.rowdim ());
@@ -371,7 +375,7 @@ Matrix2 &_trmm<Ring, typename GenericModule<Ring>::Tag>::op
 
 template <class Ring>
 template <class Modules, class Matrix1, class Matrix2>
-Matrix2 &_trsm<Ring, typename GenericModule<Ring>::Tag>::op
+Matrix2 &_trsm<Ring, typename GenericModule<Ring>::Tag>::trsm_impl
 	(const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne)
 {
 	lela_check (A.coldim () == B.rowdim ());

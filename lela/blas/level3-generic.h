@@ -27,16 +27,16 @@ template <class Ring>
 class _copy<Ring, typename GenericModule<Ring>::Tag>
 {
 	template <class Vector, class Iterator>
-	static void append_entries_spec (const Vector &v, size_t idx, Iterator begin, Iterator end,
+	static void append_entries_spec (const Ring &R, const Vector &v, size_t idx, Iterator begin, Iterator end,
 					 VectorRepresentationTypes::Dense);
 
 	template <class Vector, class Iterator>
-	static void append_entries_spec (const Vector &v, size_t idx, Iterator begin, Iterator end,
+	static void append_entries_spec (const Ring &R, const Vector &v, size_t idx, Iterator begin, Iterator end,
 					 VectorRepresentationTypes::Sparse);
 
 	template <class Vector, class Iterator>
-	static inline void append_entries (const Vector &v, size_t idx, Iterator begin, Iterator end)
-		{ append_entries_spec (v, idx, begin, end, typename VectorTraits<Ring, Vector>::RepresentationType ()); }
+	static inline void append_entries (const Ring &R, const Vector &v, size_t idx, Iterator begin, Iterator end)
+		{ append_entries_spec (R, v, idx, begin, end, typename VectorTraits<Ring, Vector>::RepresentationType ()); }
 
 	template <class Modules, class Matrix1, class Matrix2>
 	static Matrix2 &copy_impl (const Ring &F, Modules &M, const Matrix1 &A, Matrix2 &B,
@@ -169,17 +169,75 @@ public:
 template <class Ring>
 class _trmm<Ring, typename GenericModule<Ring>::Tag>
 {
+	template <class Modules, class Matrix1, class Matrix2>
+	static Matrix2 &trmm_impl (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne);
+
+	template <class Modules, class Matrix1, class Matrix2>
+	static Matrix2 &trmm_impl (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne,
+				   MatrixIteratorTypes::Row)
+		{ return trmm_impl (F, M, a, A, B, type, diagIsOne); }
+
+	template <class Modules, class Matrix1, class Matrix2>
+	static Matrix2 &trmm_impl (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne,
+				   VectorRepresentationTypes::Dense)
+		{ return trmm_impl (F, M, a, A, B, type, diagIsOne); }
+
+	template <class Modules, class Matrix1, class Matrix2>
+	static Matrix2 &trmm_impl (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne,
+				   VectorRepresentationTypes::Dense01)
+		{ return trmm_impl (F, M, a, A, B, type, diagIsOne); }
+
+	template <class Modules, class Matrix1, class Matrix2>
+	static Matrix2 &trmm_impl (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne,
+				   MatrixIteratorTypes::Col)
+		{ return trmm_impl (F, M, a, A, B, type, diagIsOne, typename VectorTraits<Ring, typename Matrix2::Col>::RepresentationType ()); }
+
+	template <class Modules, class Matrix1, class Matrix2>
+	static Matrix2 &trmm_impl (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne,
+				   MatrixIteratorTypes::RowCol)
+		{ return trmm_impl (F, M, a, A, B, type, diagIsOne, typename VectorTraits<Ring, typename Matrix2::Col>::RepresentationType ()); }
+
 public:
 	template <class Modules, class Matrix1, class Matrix2>
-	static Matrix2 &op (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne);
+	static Matrix2 &op (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne)
+		{ return trmm_impl (F, M, a, A, B, type, diagIsOne, typename Matrix2::IteratorType ()); }
 };
 
 template <class Ring>
 class _trsm<Ring, typename GenericModule<Ring>::Tag>
 {
+	template <class Modules, class Matrix1, class Matrix2>
+	static Matrix2 &trsm_impl (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne);
+
+	template <class Modules, class Matrix1, class Matrix2>
+	static Matrix2 &trsm_impl (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne,
+				   MatrixIteratorTypes::Row)
+		{ return trsm_impl (F, M, a, A, B, type, diagIsOne); }
+
+	template <class Modules, class Matrix1, class Matrix2>
+	static Matrix2 &trsm_impl (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne,
+				   VectorRepresentationTypes::Dense)
+		{ return trsm_impl (F, M, a, A, B, type, diagIsOne); }
+
+	template <class Modules, class Matrix1, class Matrix2>
+	static Matrix2 &trsm_impl (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne,
+				   VectorRepresentationTypes::Dense01)
+		{ return trsm_impl (F, M, a, A, B, type, diagIsOne); }
+
+	template <class Modules, class Matrix1, class Matrix2>
+	static Matrix2 &trsm_impl (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne,
+				   MatrixIteratorTypes::Col)
+		{ return trsm_impl (F, M, a, A, B, type, diagIsOne, typename VectorTraits<Ring, typename Matrix2::Col>::RepresentationType ()); }
+
+	template <class Modules, class Matrix1, class Matrix2>
+	static Matrix2 &trsm_impl (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne,
+				   MatrixIteratorTypes::RowCol)
+		{ return trsm_impl (F, M, a, A, B, type, diagIsOne, typename VectorTraits<Ring, typename Matrix2::Col>::RepresentationType ()); }
+
 public:
 	template <class Modules, class Matrix1, class Matrix2>
-	static Matrix2 &op (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne);
+	static Matrix2 &op (const Ring &F, Modules &M, const typename Ring::Element &a, const Matrix1 &A, Matrix2 &B, TriangularMatrixType type, bool diagIsOne)
+		{ return trsm_impl (F, M, a, A, B, type, diagIsOne, typename Matrix2::IteratorType ()); }
 };
 
 template <class Ring>
@@ -284,6 +342,8 @@ public:
 } // namespace LELA
 
 #include "lela/blas/level3-generic.tcc"
+
+#include "lela/matrix/io.tcc"
 
 #endif // __BLAS_LEVEL3_GENERIC_H
 

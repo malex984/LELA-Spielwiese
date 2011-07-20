@@ -25,6 +25,10 @@
 #include "lela/blas/context.h"
 #include "lela/randiter/nonzero.h"
 #include "lela/algorithms/strassen-winograd.h"
+#include "lela/ring/type-wrapper.h"
+
+#define FLOAT_MANTISSA 24
+#define DOUBLE_MANTISSA 53
 
 namespace LELA 
 {
@@ -52,16 +56,43 @@ struct ModularTraits
 	/// Function to reduce by modulus
 	template <class FE>
 	static Element &reduce (Element &r, FE a, Element m) 
-		{ r = a % m; if (r < 0) r += m; return r; }
-
-	/// Version of above which writes into a property
-	template <class Iterator, class Accessor, class FE>
-	static Property<Iterator, Accessor> &reduce (Property<Iterator, Accessor> &r, FE a, Element m)
-		{ r = a % m; return r; }
+		{ r = a % m; shift_up (r, m); return r; }
 
 	/// Initialise an element from an integer; for initialisation of the modulus
-	static Element &init_element (Element &elt, integer x)
+	static Element &init_modulus (Element &elt, integer x)
 		{ elt = x; return elt; }
+
+	/// Write an element to the given stream
+	static std::ostream &write (std::ostream &os, const Element &x)
+		{ return os << x; }
+
+	/// Get the width of a typical element of the ring
+	static size_t element_width (const integer &modulus)
+		{ return (size_t) ceil (log (modulus.get_d ()) / M_LN10); }
+
+	template <class T>
+	static size_t element_width (const T &modulus)
+		{ return (size_t) ceil (log (double (modulus)) / M_LN10); }
+
+	/// If v is too low for the window of validity, shift it up by the value of the modulus
+	template <class T>
+	static T &shift_up (T &v, const Element &modulus)
+		{ if (v < 0) v += modulus; return v; }
+
+	/// If v is too high for the window of validity, shift it down by the value of the modulus
+	template <class T>
+	static T &shift_down (T &v, const Element &modulus)
+		{ if (v >= modulus) v -= modulus; return v; }
+
+	/// Move v to within the valid range for the modulus
+	template <class T>
+	static T &valid_rep (T &v, const Element &modulus)
+		{ return shift_down (v, modulus); }
+
+	/// Get what is in any event a positive representation of the given element
+	template <class T>
+	static T &positive_rep (T &v, const Element &modulus)
+		{ return v; }
 };
 
 // Specialisation for uint8
@@ -74,15 +105,32 @@ struct ModularTraits<uint8>
 	typedef int EEAElement;
 	static bool valid_modulus (const integer &modulus) { return modulus < integer (1U << 8); }
 	template <class FE>
-	static Element &reduce (Element &r, FE a, Element m) 
-		{ r = a % m; return r; }
+	static Element &reduce (Element &r, const FE &a, Element m) 
+		{ integer t = (integer) a % (integer) m; shift_up (t, m); return r = t.get_ui (); }
+	static Element &reduce (Element &r, FatElement a, Element m) 
+		{ return r = a % m; }
+	static DoubleFatElement &reduce (DoubleFatElement &r, DoubleFatElement a, Element m) 
+		{ return r = a % m; }
 	static Element &reduce (Element &r, int a, Element m) 
 		{ int t = a % (int) m; if (t < 0) t += m; return r = t; }
-	template <class Iterator, class Accessor, class FE>
-	static Property<Iterator, Accessor> &reduce (Property<Iterator, Accessor> &r, FE a, Element m)
-		{ r = a % m; return r; }
-	static Element &init_element (Element &elt, integer x)
+	static Element &init_modulus (Element &elt, integer x)
 		{ elt = x.get_ui (); return elt; }
+	static std::ostream &write (std::ostream &os, const Element &x)
+		{ return os << (int) x; }
+	static size_t element_width (Element modulus)
+		{ return (size_t) ceil (log (double (modulus)) / M_LN10); }
+	template <class T>
+	static T &shift_up (T &v, uint8 modulus)
+		{ if (v < 0) v += modulus; return v; }
+	template <class T>
+	static T &shift_down (T &v, uint8 modulus)
+		{ if (v >= modulus) v -= modulus; return v; }
+	template <class T>
+	static T &valid_rep (T &v, const Element &modulus)
+		{ return shift_down (v, modulus); }
+	template <class T>
+	static T &positive_rep (T &v, const Element &modulus)
+		{ return v; }
 };
 
 // Specialisation for uint16
@@ -95,15 +143,34 @@ struct ModularTraits<uint16>
 	typedef int EEAElement;
 	static bool valid_modulus (const integer &modulus) { return modulus < integer (1U << 16); }
 	template <class FE>
-	static Element &reduce (Element &r, FE a, Element m) 
-		{ r = a % m; return r; }
+	static Element &reduce (Element &r, const FE &a, Element m) 
+		{ integer t = (integer) a % (integer) m; shift_up (t, m); return r = t.get_ui (); }
+	static Element &reduce (Element &r, FatElement a, Element m) 
+		{ return r = a % m; }
+	static Element &reduce (Element &r, DoubleFatElement a, Element m) 
+		{ return r = a % m; }
+	static DoubleFatElement &reduce (DoubleFatElement &r, DoubleFatElement a, Element m) 
+		{ return r = a % m; }
 	static Element &reduce (Element &r, int a, Element m) 
 		{ int t = a % (int) m; if (t < 0) t += m; return r = t; }
-	template <class Iterator, class Accessor, class FE>
-	static Property<Iterator, Accessor> &reduce (Property<Iterator, Accessor> &r, FE a, Element m)
-		{ r = a % m; return r; }
-	static Element &init_element (Element &elt, integer x)
+	static Element &init_modulus (Element &elt, integer x)
 		{ elt = x.get_ui (); return elt; }
+	static std::ostream &write (std::ostream &os, const Element &x)
+		{ return os << x; }
+	static size_t element_width (Element modulus)
+		{ return (size_t) ceil (log (double (modulus)) / M_LN10); }
+	template <class T>
+	static T &shift_up (T &v, uint16 modulus)
+		{ if (v < 0) v += modulus; return v; }
+	template <class T>
+	static T &shift_down (T &v, uint16 modulus)
+		{ if (v >= modulus) v -= modulus; return v; }
+	template <class T>
+	static T &valid_rep (T &v, const Element &modulus)
+		{ return shift_down (v, modulus); }
+	template <class T>
+	static T &positive_rep (T &v, const Element &modulus)
+		{ return v; }
 };
 
 // Specialisation for uint32
@@ -116,15 +183,32 @@ struct ModularTraits<uint32>
 	typedef int EEAElement;
 	static bool valid_modulus (const integer &modulus) { return modulus < integer (1U << 31) * 2; }
 	template <class FE>
-	static Element &reduce (Element &r, FE a, Element m) 
-		{ r = a % m; return r; }
+	static Element &reduce (Element &r, const FE &a, Element m) 
+		{ integer t = (integer) a % (integer) m; if (t < 0) t += m; return r = t.get_ui (); }
+	static Element &reduce (Element &r, FatElement a, Element m) 
+		{ return r = a % m; }
+	static DoubleFatElement &reduce (DoubleFatElement &r, DoubleFatElement a, Element m) 
+		{ return r = a % m; }
 	static Element &reduce (Element &r, int a, Element m) 
-		{ long long t = (long long) a % (long long) m; if (t < 0) t += m; return r = t; }
-	template <class Iterator, class Accessor, class FE>
-	static Property<Iterator, Accessor> &reduce (Property<Iterator, Accessor> &r, FE a, Element m)
-		{ r = a % m; return r; }
-	static Element &init_element (Element &elt, integer x)
+		{ long long t = (long long) a % (long long) m; shift_up (t, m); return r = t; }
+	static Element &init_modulus (Element &elt, integer x)
 		{ elt = x.get_ui (); return elt; }
+	static std::ostream &write (std::ostream &os, const Element &x)
+		{ return os << x; }
+	static size_t element_width (Element modulus)
+		{ return (size_t) ceil (log (double (modulus)) / M_LN10); }
+	template <class T>
+	static T &shift_up (T &v, uint32 modulus)
+		{ if (v < 0) v += modulus; return v; }
+	template <class T>
+	static T &shift_down (T &v, uint32 modulus)
+		{ if ((FatElement) v >= (FatElement) modulus) v -= modulus; return v; }
+	template <class T>
+	static T &valid_rep (T &v, const Element &modulus)
+		{ return shift_down (v, modulus); }
+	template <class T>
+	static T &positive_rep (T &v, const Element &modulus)
+		{ return v; }
 };
 
 // Specialisation for float
@@ -133,17 +217,34 @@ struct ModularTraits<float>
 {
 	typedef float Element;
 	typedef float FatElement;
-	typedef double DoubleFatElement;
+	typedef float DoubleFatElement;
 	typedef int EEAElement;
 	static bool valid_modulus (const integer &modulus) { return modulus.get_d () < 4096.0; }
 	template <class FE>
-	static Element &reduce (Element &r, FE a, Element m) 
-		{ r = fmod (a, m); if (r < 0) r += m; return r; }
-	template <class Iterator, class Accessor, class FE>
-	static Property<Iterator, Accessor> &reduce (Property<Iterator, Accessor> &r, FE a, Element m)
-		{ r = fmod (a, m); return r; }
-	static Element &init_element (Element &elt, integer x)
+	static Element &reduce (Element &r, const FE &a, Element m) 
+		{ integer t = (integer) a % (integer) m; shift_down (t, m); return r = t.get_d (); }
+	static Element &reduce (Element &r, FatElement a, Element m) 
+		{ r = fmod (a, m); return shift_up (shift_down (r, m), m); }
+	static double &reduce (double &r, FatElement a, Element m) 
+		{ r = fmod (a, m); return shift_up (shift_down (r, m), m); }
+	static Element &init_modulus (Element &elt, integer x)
 		{ elt = x.get_d (); return elt; }
+	static std::ostream &write (std::ostream &os, const Element &x)
+		{ return os << (int) x; }
+	static size_t element_width (Element modulus)
+		{ return (size_t) ceil (log (modulus / 2) / M_LN10) + 1; }
+	template <class T>
+	static T &shift_up (T &v, float modulus)
+		{ if (v < -modulus / 2) v += modulus; return v; }
+	template <class T>
+	static T &shift_down (T &v, float modulus)
+		{ if (v > modulus / 2) v -= modulus; return v; }
+	template <class T>
+	static T &valid_rep (T &v, const Element &modulus)
+		{ return shift_up (shift_down (v, modulus), modulus); }
+	template <class T>
+	static T positive_rep (T v, const Element &modulus)
+		{ if (v < 0) return v + modulus; else return v; }
 };
 
 // Specialisation for double
@@ -156,13 +257,28 @@ struct ModularTraits<double>
 	typedef int EEAElement;
 	static bool valid_modulus (const integer &modulus) { return modulus.get_d () < 67108864.0; }
 	template <class FE>
-	static Element &reduce (Element &r, FE a, Element m) 
-		{ r = fmod (a, m); if (r < 0) r += m; return r; }
-	template <class Iterator, class Accessor, class FE>
-	static Property<Iterator, Accessor> &reduce (Property<Iterator, Accessor> &r, FE a, Element m)
-		{ r = fmod (a, m); return r; }
-	static Element &init_element (Element &elt, integer x)
+	static Element &reduce (Element &r, const FE &a, Element m) 
+		{ integer t = (integer) a % (integer) m; shift_up (shift_down (t, m), m); return r = t.get_d (); }
+	static Element &reduce (Element &r, FatElement a, Element m) 
+		{ r = fmod (a, m); return shift_up (shift_down (r, m), m); }
+	static Element &init_modulus (Element &elt, integer x)
 		{ elt = x.get_d (); return elt; }
+	static std::ostream &write (std::ostream &os, const Element &x)
+		{ return os << (long long) x; }
+	static size_t element_width (Element modulus)
+		{ return (size_t) ceil (log (modulus / 2) / M_LN10) + 1; }
+	template <class T>
+	static T &shift_up (T &v, double modulus)
+		{ if (v < -modulus / 2) v += modulus; return v; }
+	template <class T>
+	static T &shift_down (T &v, double modulus)
+		{ if (v > modulus / 2) v -= modulus; return v; }
+	template <class T>
+	static T &valid_rep (T &v, const Element &modulus)
+		{ return shift_up (shift_down (v, modulus), modulus); }
+	template <class T>
+	static T positive_rep (T v, const Element &modulus)
+		{ if (v < 0) return v + modulus; else return v; }
 };
 
 /** @name ModularBase 
@@ -196,7 +312,7 @@ public:
 	Modular (const integer &modulus)
 	{
 		lela_check (ModularTraits<Element>::valid_modulus (modulus));
-		ModularTraits<Element>::init_element (_modulus, modulus);
+		ModularTraits<Element>::init_modulus (_modulus, modulus);
 	}
 
 	Modular (const Modular<Element> &F) : _modulus (F._modulus) {}
@@ -205,41 +321,38 @@ public:
 	double &convert (double &x, const Element &y) const {return  x = (double) y;}
 	float &convert (float &x, const Element &y) const {return  x = (float) y;}
 
-	Element &init (Element &x, const integer &y = 0) const
-	{
-		integer t = y % _modulus;
-		if (t < 0) t += _modulus;
-		ModularTraits<Element>::init_element (x, t);
-		return x;
-	}
+	template <class Iterator, class Accessor, class T>
+	Element &init (Property<Iterator, Accessor> x, const T &y) const
+		{ return init (x.ref (), y); }
 
-	Element &init (Element &x, const int y) const
+	template <class T>
+	Element &init (Element &x, const T &y) const
 	{
 		ModularTraits<Element>::reduce (x, y, _modulus);
 		return x;
 	}
 
-	Element &init (Element &x, const unsigned int y) const
-	{ 
-		ModularTraits<Element>::reduce (x, y, _modulus);
-		return x;
-	}
-
-	Element &init (Element &x, const double &y) const
+	Element &init (Element &x, double y) const
 	{ 
 		double z = fmod (y, (double) _modulus);
-		if (z < 0) z += (double) _modulus;
+		ModularTraits<Element>::shift_up (z, _modulus);
 		return x = (Element) (z+.5);
 	}
 
-	Element &init (Element &x, const float &y) const
+	Element &init (Element &x, float y) const
 	{ 
 		float z = fmod (y, (float) _modulus);
-		if (z < 0) z += (float) _modulus;
+		ModularTraits<Element>::shift_up (z, _modulus);
 		return x = (Element) (z+.5);
 	}
 
-	Element &assign (Element &x, Element y) const { return x = y; }
+	Element &assign (Element &x, Element y) const
+		{ return x = y; }
+
+	template <class Iterator, class Accessor>
+	Element &assign (Property<Iterator, Accessor> x, Element y) const
+		{ return assign (x.ref (), y); }
+
 	integer &cardinality (integer &c) const { return c = _modulus; }
 	integer &characteristic (integer &c) const { return c = _modulus; }
 
@@ -247,10 +360,10 @@ public:
 	bool isZero (const Element &x) const { return x == 0; }
 	bool isOne (const Element &x) const { return x == 1; }
 
-	std::ostream &write (std::ostream &os) const { return os << "ZZ/" << integer (_modulus).get_str (); }
+	std::ostream &write (std::ostream &os) const { os << "ZZ/"; return ModularTraits<Element>::write (os, _modulus); }
 	std::istream &read (std::istream &is) { return is >> _modulus; }
 
-	std::ostream &write (std::ostream &os, const Element &x) const { return os << integer (x).get_str (); }
+	std::ostream &write (std::ostream &os, const Element &x) const { return ModularTraits<Element>::write (os, x); }
 
 	std::istream &read (std::istream &is, Element &x) const
 	{
@@ -258,17 +371,19 @@ public:
 
 		is >> tmp;
 
-		ModularTraits<Element>::reduce (x, abs (tmp.get_si ()), _modulus);
-		if (tmp < 0) x = _modulus - x;
+		ModularTraits<Element>::reduce (x, tmp.get_si (), _modulus);
 
 		return is; 
 	}
+
+	size_t elementWidth () const
+		{ return ModularTraits<Element>::element_width (_modulus); }
 
 	Element &add (Element &x, const Element &y, const Element &z) const
 	{
 		typename ModularTraits<Element>::FatElement ty = y;
 		ty += z;
-		if (ty >= _modulus) ty -= _modulus;
+		ModularTraits<Element>::valid_rep (ty, _modulus);
 		return x = ty;
 	}
  
@@ -276,7 +391,7 @@ public:
 	{ 
 		typename ModularTraits<Element>::FatElement ty = y;
 		ty += _modulus - z;
-		if (ty >= _modulus) ty -= _modulus;
+		ModularTraits<Element>::valid_rep (ty, _modulus);
 		return x = ty;
 	}
  
@@ -293,10 +408,10 @@ public:
 		typename ModularTraits<Element>::EEAElement gcd;
 		Element yremgcd;
 
-		eea (gcd, a, z, b, _modulus);
+		eea (gcd, a, ModularTraits<Element>::positive_rep (z, _modulus), b, _modulus);
 
 		if (ModularTraits<Element>::reduce (yremgcd, y, Element (gcd)) == 0) {
-			if (a < 0) a += _modulus;
+			ModularTraits<Element>::shift_down (ModularTraits<Element>::shift_up (a, _modulus), _modulus);
 			mul (x, Element (a), y / Element (gcd));
 			return true;
 		} else
@@ -304,18 +419,19 @@ public:
 	}
  
 	Element &neg (Element &x, const Element &y) const
-		{ if (y == 0) return x = y; else return x = _modulus - y; }
+		{ if (y == 0) return x = y; else x = _modulus - y; return ModularTraits<Element>::shift_down (x, _modulus); }
  
 	bool inv (Element &x, const Element &y) const
 	{
 		typename ModularTraits<Element>::EEAElement ty, tm;
 		typename ModularTraits<Element>::EEAElement gcd;
 
-		eea (gcd, ty, y, tm, _modulus);
+		eea (gcd, ty, ModularTraits<Element>::positive_rep (y, _modulus), tm, _modulus);
 
 		if (gcd == 1) {
-			if (ty < 0) ty += _modulus;
+			ModularTraits<Element>::shift_up (ty, _modulus);
 			x = ty;
+			ModularTraits<Element>::shift_down (x, _modulus);
 			return true;
 		} else
 			return false;
@@ -332,7 +448,7 @@ public:
 	{ 
 		typename ModularTraits<Element>::FatElement tx = x;
 		tx += y;
-		if (tx >= _modulus) tx -= _modulus;
+		ModularTraits<Element>::valid_rep (tx, _modulus);
 		return x = tx;
 	}
 
@@ -340,7 +456,7 @@ public:
 	{
 		typename ModularTraits<Element>::FatElement tx = x;
 		tx += _modulus - y;
-		if (tx >= _modulus) tx -= _modulus;
+		ModularTraits<Element>::valid_rep (tx, _modulus);
 		return x = tx;
 	}
  
@@ -352,12 +468,8 @@ public:
 	}
 
 	template <class Iterator, class Accessor>
-	Property<Iterator, Accessor> &mulin (Property<Iterator, Accessor> &x, const Element &y) const
-	{
-		typename ModularTraits<Element>::FatElement tx = x;
-		tx *= y;
-		return ModularTraits<Element>::reduce (x, tx, _modulus);
-	}
+	Element &mulin (Property<Iterator, Accessor> &x, const Element &y) const
+		{ return mulin (x.ref (), y); }
  
 	bool divin (Element &x, const Element &y) const
 	{
@@ -372,7 +484,7 @@ public:
 	}
  
 	Element &negin (Element &x) const
-		{ if (x == 0) return x; else return x = _modulus - x; }
+		{ if (x == 0) return x; else x = _modulus - x; return ModularTraits<Element>::shift_down (x, _modulus); }
  
 	bool invin (Element &x) const
 		{ return inv (x, x); }
@@ -386,7 +498,7 @@ public:
 
 	Element zero () const { return 0; }
 	Element one () const { return 1; }
-	Element minusOne () const { return _modulus - 1; }
+	Element minusOne () const { Element t = _modulus - 1; return ModularTraits<Element>::shift_down (t, _modulus); }
 
 private:
 	// The extended Euclidean algoritm
@@ -414,27 +526,44 @@ private:
 template <class Element>
 struct ZpModule : public GenericModule<Modular<Element> >
 {
-	struct Tag { typedef typename GenericModule<Modular<Element> >::Tag Parent; };
+	struct Tag
+	{
+		typedef typename GenericModule<Modular<Element> >::Tag Parent;
+		typedef typename AllModules<TypeWrapperRing<Element> >::Tag TWParent;
+	};
 
 	/// Number of times a product of two elements can be added before it is necessary to reduce by the modulus; 0 for unlimited
 	size_t block_size;
 
+	/// Modules for the switch over to TypeWrapperRing
+	AllModules<TypeWrapperRing<Element> > TWM;
+
 	mutable std::vector<typename ModularTraits<Element>::DoubleFatElement> _tmp;
 
-	ZpModule (const Modular<Element> &R) : block_size (((typename ModularTraits<Element>::DoubleFatElement) -1LL) / ((R._modulus - 1) * (R._modulus - 1))) {}
+	ZpModule (const Modular<Element> &R)
+		: block_size (((typename ModularTraits<Element>::DoubleFatElement) -1LL) / ((R._modulus - 1) * (R._modulus - 1))),
+		  TWM (TypeWrapperRing<Element> ())
+		{}
 };
 
 template <>
 struct ZpModule<integer> : public GenericModule<Modular<integer> >
 {
-	struct Tag { typedef GenericModule<Modular<integer> >::Tag Parent; };
+	struct Tag
+	{
+		typedef GenericModule<Modular<integer> >::Tag Parent;
+		typedef AllModules<TypeWrapperRing<integer> >::Tag TWParent;
+	};
 
 	/// Number of times a product of two elements can be added before it is necessary to reduce by the modulus; 0 for unlimited
 	size_t block_size;
 
+	/// Modules for the switch over to TypeWrapperRing
+	AllModules<TypeWrapperRing<integer> > TWM;
+
 	mutable std::vector<integer> _tmp;
 
-	ZpModule (const Modular<integer> &R) : block_size (0) {}
+	ZpModule (const Modular<integer> &R) : block_size (0), TWM (TypeWrapperRing<integer> ()) {}
 };
 
 template <>
@@ -461,6 +590,50 @@ private:
 	}
 };
 
+template <>
+struct ZpModule<float> : public GenericModule<float>
+{
+	struct Tag
+	{
+		typedef GenericModule<Modular<float> >::Tag Parent;
+		typedef AllModules<TypeWrapperRing<float> >::Tag TWParent;
+	};
+
+	/// Number of times a product of two elements can be added before it is necessary to reduce by the modulus; 0 for unlimited
+	size_t block_size;
+
+	/// Modules for the switch over to TypeWrapperRing
+	AllModules<TypeWrapperRing<float> > TWM;
+
+	mutable std::vector<ModularTraits<float>::DoubleFatElement> _tmp;
+
+	ZpModule (const Modular<float> &R)
+		: block_size (floor (float (1 << FLOAT_MANTISSA) / ((R._modulus - 1) * (R._modulus - 1)))),
+		  TWM (TypeWrapperRing<float> ()) {}
+};
+
+template <>
+struct ZpModule<double> : public GenericModule<double>
+{
+	struct Tag
+	{
+		typedef GenericModule<Modular<double> >::Tag Parent;
+		typedef AllModules<TypeWrapperRing<double> >::Tag TWParent;
+	};
+
+	/// Number of times a product of two elements can be added before it is necessary to reduce by the modulus; 0 for unlimited
+	size_t block_size;
+
+	/// Modules for the switch over to TypeWrapperRing
+	AllModules<TypeWrapperRing<double> > TWM;
+
+	mutable std::vector<ModularTraits<double>::DoubleFatElement> _tmp;
+
+	ZpModule (const Modular<double> &R)
+		: block_size (floor (double (1ULL << DOUBLE_MANTISSA) / ((R._modulus - 1) * (R._modulus - 1)))),
+		  TWM (TypeWrapperRing<double> ()) {}
+};
+
 template <class Element>
 struct AllModules<Modular<Element> > : public StrassenModule<Modular<Element>, ZpModule<Element> >
 {
@@ -474,9 +647,15 @@ struct AllModules<Modular<Element> > : public StrassenModule<Modular<Element>, Z
 /*
 #include "lela/blas/level1-modular.h"
 #include "lela/blas/level2-modular.h"
+#include "lela/blas/old.level3-modular.h"
+
+#include "lela/blas/level1-generic.h"
+#include "lela/blas/level2-generic.h"
+#include "lela/blas/level3-generic.h"
 
 #include "lela/blas/level1-modular.tcc"
 #include "lela/blas/level2-modular.tcc"
+#include "lela/blas/old.level3-modular.tcc"
 
 #include "lela/blas/level3-sw.h"
 */

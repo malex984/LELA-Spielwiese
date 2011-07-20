@@ -18,6 +18,7 @@
 #include "lela/lela-config.h"
 #include "lela/util/commentator.h"
 #include "lela/matrix/io.h"
+#include "lela/blas/level3.h"
 
 #define BUF_SIZE 32
 
@@ -37,36 +38,28 @@ std::istream &MatrixReader<Ring>::read (std::istream &is, Matrix &A, FileFormatT
 
 	case FORMAT_TURNER:
 		return readTurner (is, A);
-		break;
 
 	case FORMAT_ONE_BASED:
 		return readOneBased (is, A);
-		break;
 
 	case FORMAT_DUMAS:
 		return readDumas (is, A);
-		break;
 
 	case FORMAT_MAPLE:
 		return readMaple (is, A);
-		break;
 
 	case FORMAT_MATLAB:
 		return readMatlab (is, A);
-		break;
 
 	case FORMAT_SAGE:
 		return readSage (is, A);
-		break;
 
 	case FORMAT_PRETTY:
 		return readPretty (is, A);
-		break;
 
 #ifdef __LELA_HAVE_LIBPNG
 	case FORMAT_PNG:
 		return readPNG (is, A);
-		break;
 #endif // __LELA_HAVE_LIBPNG
 
 	default:
@@ -185,6 +178,9 @@ std::istream &MatrixReader<Ring>::readTurner (std::istream &is, Matrix &A) const
 {
 	size_t i, j;
 
+	Context<Ring> ctx (_F);
+	BLAS3::scal (ctx, _F.zero (), A);
+
 	typename Ring::Element x;
 
 	char buf[BUF_SIZE];
@@ -224,6 +220,9 @@ std::istream &MatrixReader<Ring>::readDumas (std::istream &is, Matrix &A) const
 		throw InvalidMatrixInput ();
 
 	A.resize (m, n);
+
+	Context<Ring> ctx (_F);
+	BLAS3::scal (ctx, _F.zero (), A);
 
 	typename Ring::Element x;
 
@@ -270,29 +269,34 @@ std::istream &MatrixReader<Ring>::readMatlab (std::istream &is, Matrix &A) const
 	char c;
 	typename Ring::Element a_ij;
 
+	Context<Ring> ctx (_F);
+	BLAS3::scal (ctx, _F.zero (), A);
+
+	do
+		is >> c;
+	while (isspace (c));
+
+	if (c != '[')
+		throw InvalidMatrixInput ();
+
 	while (1) {
 		do
 			is >> c;
-		while (is && !isdigit (c));
+		while (isspace (c));
 
-		if (!is)
-			break;
+		if (!is || !(isdigit (c) || c == '-'))
+			throw InvalidMatrixInput ();
 
 		is.putback (c);
 
 		_F.read (is, a_ij);
 
-		if (! _F.isZero (a_ij))
+		if (!_F.isZero (a_ij))
 			A.setEntry (i, j, a_ij);
-
-		++j;
 
 		do
 			is >> c;
-		while (is && c != ',' && c != ';' && c != ']');
-
-		if (!is)
-			break;
+		while (isspace (c));
 
 		if (c == ';') {
 			++i;
@@ -300,6 +304,10 @@ std::istream &MatrixReader<Ring>::readMatlab (std::istream &is, Matrix &A) const
 		}
 		else if (c == ']')
 			break;
+		else if (c == ',')
+			++j;
+		else
+			throw InvalidMatrixInput ();
 	}
 
 	return is;
@@ -321,6 +329,9 @@ std::istream &MatrixReader<Ring>::readPretty (std::istream &is, Matrix &A) const
 	char c;
 
 	i = 0;
+
+	Context<Ring> ctx (_F);
+	BLAS3::scal (ctx, _F.zero (), A);
 
 	while (!is.eof ()) {
 		while (isspace (is.peek ()))
@@ -612,14 +623,7 @@ std::ostream &MatrixWriter<Ring>::writePretty (std::ostream &os, const Matrix &A
 {
 	integer c;
 
-	_F.characteristic (c);
-
-	unsigned col_width;
-
-	if (c != 0)
-		col_width = (int) ceil (log (c.get_d ()) / M_LN10);
-	else
-		col_width = 10; // Choose something reasonable
+	unsigned col_width = _F.elementWidth ();
 
 	typename Ring::Element a;
 

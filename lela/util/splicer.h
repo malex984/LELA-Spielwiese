@@ -281,6 +281,9 @@ public:
 	 */
 	void removeGaps ();
 
+	/// Use this value to disable a given source in compose
+	static const unsigned int noSource = 0xffffffffU;
+
 	/** Compose this Splicer with another and produce a new Splicer
 	 *
 	 * To make a direct copy of either horizontal or vertical
@@ -292,16 +295,16 @@ public:
 	 * @param inner Splicer with which to compose this one
 	 * @param horiz_inner_source Horizontal index of source to which inner blocks correspond
 	 * @param vert_inner_source Vertical index of source to which inner blocks correspond
-	 * @param horiz_only_source If not -1, only include horizontal blocks with this source-id and ignore all others
-	 * @param vert_only_source If not -1, only include vertical blocks with this source-id and ignore all others
+	 * @param horiz_only_source If not noSource, only include horizontal blocks with this source-id and ignore all others
+	 * @param vert_only_source If not noSource, only include vertical blocks with this source-id and ignore all others
 	 * @returns Reference to output
 	 */
 	Splicer &compose (Splicer &output,
 			  const Splicer &inner,
 			  unsigned int horiz_inner_source,
 			  unsigned int vert_inner_source,
-			  unsigned int horiz_only_source = -1,
-			  unsigned int vert_only_source = -1) const;
+			  unsigned int horiz_only_source = noSource,
+			  unsigned int vert_only_source = noSource) const;
 
 	/** Construct the reverse of this splicer and place it in output
 	 *

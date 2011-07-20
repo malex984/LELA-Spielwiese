@@ -154,30 +154,29 @@ int main (int argc, char **argv)
 {
 	bool pass1 = true, pass2 = true;
 
-	static long m = 90;
-	static long k = 90;
-	static long n = 90;
+	static long m = 100;
+	static long k = 103;
+	static long n = 99;
 	static integer q = 101U;
 
 	static Argument args[] = {
 		{ 'm', "-m M", "Set row-dimension of matrix A to M.", TYPE_INT, &m },
 		{ 'k', "-k K", "Set column-dimension of matrix A to K.", TYPE_INT, &k },
 		{ 'n', "-n N", "Set column-dimension of matrix B to N.", TYPE_INT, &n },
-		{ 'q', "-q Q", "Operate over the ring ZZ/Q [1] for uint32 modulus.", TYPE_INTEGER, &q },
+		{ 'q', "-q Q", "Operate over the ring ZZ/Q [1] for float modulus.", TYPE_INTEGER, &q },
 		{ '\0' }
 	};
 
 	parseArguments (argc, argv, args);
    
-        typedef MyModular<uint32> Ring;
+        typedef MyModular<float> Ring;
         typedef typename Ring::Element Element;
 
 	Ring GFq (q);
-	GF2 gf2;
 
 	commentator.setBriefReportParameters (Commentator::OUTPUT_CONSOLE, false, false, false);
 	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDepth (10);
-	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDetailLevel (Commentator::LEVEL_UNIMPORTANT);
+	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDetailLevel (Commentator::LEVEL_NORMAL);
 	commentator.getMessageClass (TIMING_MEASURE).setMaxDepth (3);
 
 	commentator.start ("Strassen-Winograd test suite", "Strassen-Winograd");
@@ -187,9 +186,9 @@ int main (int argc, char **argv)
 
 	Context< Ring > ctx_GFq (GFq);
 
-	RandomDenseStream<Ring, DenseMatrix<Element>::Row> stream_A_gfq (GFq, m, k);
-	RandomDenseStream<Ring, DenseMatrix<Element>::Row> stream_B_gfq (GFq, k, n);
-	RandomDenseStream<Ring, DenseMatrix<Element>::Row> stream_C_gfq (GFq, m, n);
+	RandomDenseStream<Ring, DenseMatrix<Element>::Row> stream_A_gfq (GFq, k, m);
+	RandomDenseStream<Ring, DenseMatrix<Element>::Row> stream_B_gfq (GFq, n, k);
+	RandomDenseStream<Ring, DenseMatrix<Element>::Row> stream_C_gfq (GFq, n, m);
 
 	DenseMatrix<Element> A_gfq (stream_A_gfq), B_gfq (stream_B_gfq), C_gfq (stream_C_gfq);
 
@@ -202,13 +201,14 @@ int main (int argc, char **argv)
 
 	commentator.start ("Running tests over GF(2)", "Strassen-Winograd");
 
+	GF2 gf2;
 	Context<GF2> ctx_gf2 (gf2);
 
-	RandomDenseStream<GF2, DenseMatrix<bool>::Row> stream_A_gf2 (gf2, m, k);
-	RandomDenseStream<GF2, DenseMatrix<bool>::Row> stream_B_gf2 (gf2, k, n);
-	RandomDenseStream<GF2, DenseMatrix<bool>::Row> stream_C_gf2 (gf2, m, n);
+        RandomDenseStream<GF2, DenseMatrix<GF2::Element>::Row> stream_A_gf2 (gf2, k, m);
+	RandomDenseStream<GF2, DenseMatrix<GF2::Element>::Row> stream_B_gf2 (gf2, n, k);
+	RandomDenseStream<GF2, DenseMatrix<GF2::Element>::Row> stream_C_gf2 (gf2, n, m);
 
-	DenseMatrix<bool> A_gf2 (stream_A_gf2), B_gf2 (stream_B_gf2), C_gf2 (stream_C_gf2);
+	DenseMatrix<GF2::Element> A_gf2 (stream_A_gf2), B_gf2 (stream_B_gf2), C_gf2 (stream_C_gf2);
 
 	pass1 = testMul (ctx_gf2, A_gf2, B_gf2, C_gf2) && pass1;
 	pass1 = testAddMul (ctx_gf2, A_gf2, B_gf2, C_gf2) && pass1;

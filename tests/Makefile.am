@@ -1,13 +1,9 @@
-# Copyright 2010 the LELA group
+# Copyright 2011 Bradford Hovinen <hovinen@gmail.com>
 # This file is part of LELA
 # see COPYING for licence
 
 INCLUDES=-I$(top_srcdir) -I$(top_builddir)
-#AM_LDFLAGS = -llapack -lcblas -latlas 
-#AM_CXXFLAGS = -g -Wall -O2 
 AM_CXXFLAGS = -g -Wall -DDEBUG -O0
-#AM_CXXFLAGS = -g -Wall -D__LELA_HAVE_DGETRF -D__LELA_HAVE_DGETRI 
-#AM_CFLAGS = -g -Wall
 
 BENCHMARK_CXXFLAGS = -O2
 
@@ -24,30 +20,30 @@ LDADD = $(LIBPOLYS_LIBS) $(GMP_LIBS)  $(PNG_LIBS) $(M4RI_LIBS) $(BLAS_LIBS) $(to
 # will be ignored by "make check" and can be temporary storage for problematic tests.
 BASIC_TESTS =  \
         test-commentator        \
-        test-gf2                \
-        test-gmp-rational       \
-        test-matrix                \
         test-modular            \
         test-modular-double     \
-        test-blas-generic-module      \
-        test-blas-generic-module-gf2        \
+        test-gf2                \
+        test-rationals       \
+        test-type-wrapper-ring	\
         test-randiter-nonzero   \
+	test-vector		\
         test-subiterator        \
         test-subvector          \
 	test-bit-subvector	\
 	test-hybrid-vector	\
-        test-type-wrapper-ring	\
-        test-strassen-winograd  \
+	test-matrix		\
+        test-blas-generic-module     \
+	test-blas-generic-module-gf2 \
+        test-blas-zp-module     \
+	test-strassen-winograd	\
 	test-elimination	\
 	test-gauss-jordan	\
-	test-faugere-lachartre  
-
-#        test-coeffs
+	test-faugere-lachartre  \
+	test-coeffs
 
 # a benchmarker, not to be included in check.
 BENCHMARKS =            \
-        benchmark-rings \
-        benchmark-blas
+	benchmark-blas
 
 EXTRA_PROGRAMS = $(NON_COMPILING_TESTS) $(BENCHMARKS)
 
@@ -70,8 +66,8 @@ test_gf2_SOURCES =                        \
         test-gf2.C                        \
         test-common.C
 
-test_gmp_rational_SOURCES =               \
-        test-gmp-rational.C               \
+test_rationals_SOURCES =               \
+        test-rationals.C               \
         test-common.C
 
 test_type_wrapper_ring_SOURCES =        \
@@ -104,9 +100,21 @@ test_blas_generic_module_gf2_SOURCES = \
         test-blas-level3.h             \
         test-common.C
 
+test_blas_zp_module_SOURCES =   \
+        test-blas-zp-module.C   \
+        test-blas-level1.h           \
+        test-blas-level2.h           \
+        test-blas-level3.h           \
+        test-common.C
+
 test_modular_double_SOURCES =                \
         test-modular-double.C                \
         test-common.C
+
+test_vector_SOURCES = \
+	test-vector.C \
+	test-common.C \
+	test-vector.h
 
 test_matrix_SOURCES = \
         test-matrix.C \
@@ -137,6 +145,10 @@ test_faugere_lachartre_SOURCES = \
         test-common.C                \
         test-faugere-lachartre.C
 
+test_coeffs_SOURCES = \
+        test-coeffs.C \
+        test-common.C
+
 benchmark_blas_SOURCES =    \
         benchmark-blas.C    \
         test-common.C            \
@@ -144,6 +156,12 @@ benchmark_blas_SOURCES =    \
 
 benchmark_matrix_domain_CXXFLAGS = ${BENCHMARK_CXXFLAGS}
 
-test_coeffs_SOURCES = \
-        test-coeffs.C \
-        test-common.C
+noinst_HEADERS =	\
+	test-common.h	\
+	test-ring.h	\
+	test-vector.h	\
+	test-matrix.h	\
+	test-blas-level1.h	\
+	test-blas-level2.h	\
+	test-blas-level3.h
+

@@ -76,7 +76,8 @@ bool testRing (Ring &F, const char *title, bool ringp = true)
 	typename Ring::Element a, b, c, d, e, f;
 	F.init (a, 0); F.init (b, 0); F.init (c, 0); F.init (d, 0); F.init (e, 0); F.init (f, 0);
 
-	report << "Ring self description: " << F.write (report) << endl;
+	report << "Ring self description: ";
+	F.write (report) << endl;
 
 	LELA::integer n, m;
 	bool pass = true, part_pass = true;
@@ -117,6 +118,7 @@ bool testRing (Ring &F, const char *title, bool ringp = true)
 	commentator.stop (MSG_STATUS (part_pass));
 	commentator.progress ();
 
+#if 0 // This test makes no sense any more, since convert has been removed
 	commentator.start ("Testing init/convert");
 	part_pass = true;
 
@@ -137,6 +139,7 @@ bool testRing (Ring &F, const char *title, bool ringp = true)
 
 	commentator.stop (MSG_STATUS (part_pass));
 	commentator.progress ();
+#endif // Test disabled
 
 	commentator.start ("Testing ring arithmetic");
 	part_pass = true;

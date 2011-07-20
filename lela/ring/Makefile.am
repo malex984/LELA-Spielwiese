@@ -6,11 +6,10 @@ pkgincludesubdir=$(pkgincludedir)/ring
 BASIC_HDRS =			\
 	interface.h		\
 	type-wrapper.h		\
-	gmp-rational.h		\
 	gf2.h			\
+	rationals.h		\
 	old.modular.h		\
 	coeffs.h mymodular.h
-
 
 pkgincludesub_HEADERS =			\
 	$(BASIC_HDRS)

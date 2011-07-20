@@ -22,6 +22,7 @@
 #include "lela/integer.h"
 #include "lela/randiter/type-wrapper.h"
 #include "lela/blas/context.h"
+#include "lela/util/property.h"
 
 namespace LELA 
 {
@@ -69,27 +70,18 @@ public:
 
 	Element &init (Element &x, int y) const 
 		{ return x = Element (y); }
-   
-	integer &convert (integer &x, const Element &y) const 
-	{
-		Element temp (y);
-		return x = static_cast<integer> (temp); 
-	}
-    
-	double &convert (double &x, const Element &y) const 
-	{ 
-		Element temp (y);
-		return x = static_cast<double> (temp); 
-	}
- 
-	float &convert (float &x, const Element &y) const 
-	{ 
-		Element temp (y);
-		return x = static_cast<float> (temp); 
-	}
 
-	Element &assign (Element &x, const Element &y) const
+	template <class Iterator, class Accessor>
+	Element &init (Property<Iterator, Accessor> &x, int y) const 
+		{ return init (x.ref (), y); }
+
+	template <class T>
+	T &assign (T &x, const Element &y) const
 		{ return x = y; }
+
+	template <class Iterator, class Accessor>
+	Element &assign (Property<Iterator, Accessor> &x, const Element &y) const
+		{ return assign (x.ref (), y); }
 
 	integer &cardinality (integer &c) const
 		{ return c = _card; }
@@ -134,7 +126,15 @@ public:
     
 	Element &mulin (Element &x, const Element &y) const
 		{ return x *= y; }
-    
+
+	template <class Iterator, class Accessor>
+	Element &mulin (Property<Iterator, Accessor> &x, const Element &y) const
+		{ return mulin (x.ref (), y); }
+
+	template <class T>
+	T &mulin (T &x, const Element &y) const
+		{ return x *= y; }
+
 	bool divin (Element &x, const Element &y) const
 		{ if (!isZero (y)) { x /= y; return true; } else return false; }
     
@@ -143,9 +143,10 @@ public:
     
 	bool invin (Element &x) const
 		{ if (!isZero (x)) { x = Element (1) / x; return true; } else return false; }
-    
-	Element &axpyin (Element &y, const Element &a, const Element &x) const
-		{ return y += a * x; }
+
+	template <class T>
+	T &axpyin (T &y, const Element &a, const Element &x) const
+		{ return y += T (a) * T (x); }
 
 	std::ostream &write (std::ostream &os) const
 		{ return os << "type-wrapper-ring"; }
@@ -158,6 +159,9 @@ public:
     
 	std::istream &read (std::istream &is, Element &x) const
 		{ return is >> x; }
+
+	size_t elementWidth () const
+		{ return 10; }
 
 	Element zero () const { return Element (0); }
 	Element one () const { return Element (1); }

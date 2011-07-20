@@ -68,17 +68,16 @@ Vector2 &_gemv<Ring, typename GenericModule<Ring>::Tag>::gemv_impl
 
 	typename Vector<Ring>::Sparse yp;
 
-	if (F.isZero (b))
-		y.clear ();
-	else
-		BLAS1::_scal<Ring, typename Modules::Tag>::op (F, M, b, y);
+	BLAS1::_scal<Ring, typename Modules::Tag>::op (F, M, b, y);
 
 	for (; i != A.rowEnd (); ++i, ++idx) {
 		BLAS1::_dot<Ring, typename Modules::Tag>::op (F, M, t, x, *i);
 		F.mulin (t, a);
 
-		if (!F.isZero (t))
-			yp.push_back (typename Vector<Ring>::Sparse::value_type (idx, t));
+		if (!F.isZero (t)) {
+			yp.push_back (typename Vector<Ring>::Sparse::value_type (idx, typename Ring::Element ()));
+			F.assign (yp.back ().second, t);
+		}
 	}
 
 	return BLAS1::_axpy<Ring, typename Modules::Tag>::op (F, M, F.one (), yp, y);
@@ -122,12 +121,12 @@ Vector2 &_gemv<Ring, typename GenericModule<Ring>::Tag>::gemv_impl
 	lela_check (VectorUtils::hasDim<Ring> (x, A.coldim ()));
 	lela_check (VectorUtils::hasDim<Ring> (y, A.rowdim ()));
 
-	typename Vector1::const_iterator j = x.begin ();
+	typename Vector1::const_iterator j;
 	typename Ring::Element d;
 
 	BLAS1::_scal<Ring, typename Modules::Tag>::op (F, M, b, y);
 
-	for (; j != x.end (); ++j) {
+	for (j = x.begin (); j != x.end (); ++j) {
 		typename Matrix::ConstColIterator i = A.colBegin () + j->first;
 		F.mul (d, a, j->second);
 		BLAS1::_axpy<Ring, typename Modules::Tag>::op (F, M, d, *i, y);
@@ -138,8 +137,9 @@ Vector2 &_gemv<Ring, typename GenericModule<Ring>::Tag>::gemv_impl
 
 template <class Ring>
 template <class Modules, class Matrix, class Vector>
-Vector &_trmv<Ring, typename GenericModule<Ring>::Tag>::op
-	(const Ring &F, Modules &M, const Matrix &A, Vector &x, TriangularMatrixType type, bool diagIsOne)
+Vector &_trmv<Ring, typename GenericModule<Ring>::Tag>::trmv_impl
+	(const Ring &F, Modules &M, const Matrix &A, Vector &x, TriangularMatrixType type, bool diagIsOne,
+	 VectorRepresentationTypes::Dense)
 {
 	lela_check (A.coldim () == A.rowdim ());
 	lela_check (VectorUtils::hasDim<Ring> (x, A.coldim ()));
@@ -155,7 +155,6 @@ Vector &_trmv<Ring, typename GenericModule<Ring>::Tag>::op
 			typename Ring::Element ai;
 
 			if (!A.getEntry (ai, 0, 0))
-				// FIXME: Should return an error
 				return BLAS1::_scal<Ring, typename Modules::Tag>::op (F, M, F.zero (), x);
 			else
 				return BLAS1::_scal<Ring, typename Modules::Tag>::op (F, M, ai, x);
@@ -210,8 +209,9 @@ Vector &_trmv<Ring, typename GenericModule<Ring>::Tag>::op
 
 template <class Ring>
 template <class Modules, class Matrix, class Vector>
-Vector &_trsv<Ring, typename GenericModule<Ring>::Tag>::op
-	(const Ring &F, Modules &M, const Matrix &A, Vector &x, TriangularMatrixType type, bool diagIsOne)
+Vector &_trsv<Ring, typename GenericModule<Ring>::Tag>::trsv_impl
+	(const Ring &F, Modules &M, const Matrix &A, Vector &x, TriangularMatrixType type, bool diagIsOne,
+	 VectorRepresentationTypes::Dense)
 {
 	lela_check (A.coldim () == A.rowdim ());
 	lela_check (VectorUtils::hasDim<Ring> (x, A.coldim ()));

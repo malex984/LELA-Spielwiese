@@ -22,16 +22,58 @@ template <class Iterator>
 struct SimpleAccessor
 {
 	typedef typename std::iterator_traits<Iterator>::value_type value_type;
+	typedef typename std::iterator_traits<Iterator>::reference reference;
 	static value_type get (const Iterator &i) { return *i; }
+	static reference ref (Iterator &i) { return *i; }
 	static void set (Iterator &i, const value_type &T) { *i = T; }
 };
 
-/// Closure which gets the second entry in a pair
+// Forward declarations
+template <class IndexIterator, class ElementIterator, class ConstIndexIterator, class ConstElementIterator>
+class SparseVectorIterator;
+
+template <class Iterator, class ConstIterator>
+class SparseSubvectorIteratorPT;
+
+template <class Iterator, class Accessor = SimpleAccessor<Iterator> >
+struct Property;
+
+template <class Iterator, class VT>
+struct SecondEntryAccessor;
+
+// Obtain the correct reference-type for a pair-like object
 template <class Iterator>
+struct SecondReferenceType
+{ typedef typename std::iterator_traits<Iterator>::value_type::second_type type; };
+
+template <class IndexIterator, class ElementIterator, class ConstIndexIterator, class ConstElementIterator>
+struct SecondReferenceType<SparseVectorIterator<IndexIterator, ElementIterator, ConstIndexIterator, ConstElementIterator> >
+{ typedef Property<ElementIterator> type; };
+
+template <class Iterator, class ConstIterator>
+struct SecondReferenceType<SparseSubvectorIteratorPT<Iterator, ConstIterator> >
+{ typedef Property<Iterator, SecondEntryAccessor<Iterator, typename SecondReferenceType<Iterator>::type> > type; };
+
+/// Closure which gets the second entry in a pair
+///
+/// This version assumes that the value_type of the iterator is a pair of properties
+template <class Iterator, class VT = typename SecondReferenceType<Iterator>::type>
 struct SecondEntryAccessor
 {
-	typedef typename std::iterator_traits<Iterator>::value_type::second_type value_type;
+	typedef VT value_type;
+	typedef VT &reference;
 	static value_type get (const Iterator &i) { return i->second; }
+	static reference ref (Iterator &i) { return i->second; }
+	static void set (Iterator &i, const value_type &T) { i->second = T; }
+};
+
+template <class Iterator, class It2, class Ac2>
+struct SecondEntryAccessor<Iterator, Property<It2, Ac2> >
+{
+	typedef typename Property<It2, Ac2>::value_type value_type;
+	typedef typename Property<It2, Ac2>::value_type &reference;
+	static value_type get (const Iterator &i) { return i->second; }
+	static reference ref (Iterator &i) { return i->second.ref (); }
 	static void set (Iterator &i, const value_type &T) { i->second = T; }
 };
 
@@ -42,12 +84,13 @@ struct SecondEntryAccessor
 ///
 /// @param Iterator Iterator-type to be wrapped
 /// @param Accessor Closure with which to access value of iterator. Normally just dereferences, but may be a more complicated transformation.
-template <class Iterator, class Accessor = SimpleAccessor<Iterator> >
+template <class Iterator, class Accessor>
 struct Property
 {
 	Iterator _i;
 
 	typedef typename Accessor::value_type value_type;
+	typedef typename Accessor::reference reference;
 
 	Property () {}
 	Property (Iterator i) : _i (i) {}
@@ -113,6 +156,9 @@ struct Property
 
 	operator value_type () const
 		{ return Accessor::get (_i); }
+
+	reference ref ()
+		{ return Accessor::ref (_i); }
 };
 
 /// Similar to Property above but shifts the value by a fixed

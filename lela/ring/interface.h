@@ -15,9 +15,9 @@
 #define __LELA_RING_INTERFACE_H
 
 #include <iostream>
+#include <cmath>
 
 #include "lela/lela-config.h"
-#include "lela/element/interface.h"
 #include "lela/randiter/interface.h"
 #include "lela/integer.h"
 #include "lela/util/property.h"
@@ -32,6 +32,7 @@ namespace LELA
  * from which rings may be derived, though this is not required
  * provided that a ring satisfy this interface.
  */
+template <class _Element>
 class RingInterface
 {
 public:
@@ -42,54 +43,52 @@ public:
 	//@{
     
 	/// the type in which ring elements are represented.
-	typedef ElementInterface Element;
+	typedef _Element Element;
 
 	/// An object of this type is a generator of random ring elements.
-	typedef RandIterInterface RandIter;
+	typedef RandIterInterface<Element> RandIter;
     
 	/// @name Object Management
 	//@{
     
 	/** \brief Initialization of ring element from an integer.
 	 *
-	 * x becomes the image of n under the natural map from the integers
-	 * to the prime subring.  It is the result obtained from adding n 1's 
-	 * in the ring.
-	 *
-	 * This function assumes the output ring element x
-	 * has already been constructed, but that it is not
-	 * necessarily already initialized. In this
-	 * archetype implementation, this means the <tt> _elem_ptr</tt> of
-	 * x exists, but that it may be the null pointer.
+	 * x becomes the image of n under the natural map from the
+	 * integers to the ring. The element x need not have been
+	 * previously initialised.
 	 *
 	 * @return reference to x.
 	 * @param x output ring element.
 	 * @param n input integer.
 	 */
 	virtual Element &init (Element &x, const integer &n = 0) const = 0;
+
+	/// Version of init which takes a Property rather than an element.
+	///
+	/// It should do exactly what the version above taking an element does.
+	template <class Iterator, class Accessor>
+	Element &init (Property<Iterator, Accessor> x, const integer &n = 0) const
+		{ return init (x.ref (), n); }
   
-	/** \brief Conversion of ring element to an integer.  The
-	 * meaning of conversion is specific to each ring
-	 * class. However, if x is in the image of the integers in the
-	 * ring, the integer n returned is such that an init from n
-	 * will reproduce x. Most often 0 &leq; n &lt; characteristic.
-	 *
-	 * @return reference to n.
-	 * @param n output integer.
-	 * @param x input ring element.
-	 */
-	virtual integer &convert (integer &n, const Element &y) const = 0;
-    
 	/** \brief  Assignment of one ring element to another.
 	 *
-	 * This function assumes both ring elements have already been 
-	 * constructed and initialized.
+	 * This function makes a deep copy of the element y into the
+	 * element x (as opposed to the assignment-operator, which
+	 * makes only a shallow copy). The element x need not have
+	 * been previously initialised.
 	 *
 	 * @return reference to x
 	 * @param  x destination ring element.
 	 * @param  y source ring element.
 	 */
 	virtual Element &assign (Element &x, const Element &y) const = 0;
+
+	/// Version of assign which takes a Property rather than an element.
+	///
+	/// It should do exactly what the version above taking an element does.
+	template <class Iterator, class Accessor>
+	Element &assign (Property<Iterator, Accessor> x, const Element &y) const
+		{ return assign (x.ref (), y); }
     
 	/** \brief Cardinality.
 	 *
@@ -285,12 +284,8 @@ public:
 	 * @param  y ring element.
 	 */
 	template <class Iterator, class Accessor>
-	Property<Iterator, Accessor> &mulin (Property<Iterator, Accessor> &x, const Element &y) const
-	{
-		Element t = x;
-		mulin (t, y);
-		return x = t;
-	}
+	Element &mulin (Property<Iterator, Accessor> x, const Element &y) const
+		{ return mulin (x.ref (), y); }
    
 	/** Inplace Division; x /= y
 	 *
@@ -343,19 +338,19 @@ public:
     
 	/** @name Input/Output Operations */
 	//@{
-    
+
 	/** Print ring.
 	 * @return output stream to which ring is written.
 	 * @param  os  output stream to which ring is written.
 	 */
 	virtual std::ostream &write (std::ostream &os) const = 0;
-    
+
 	/** Read ring.
 	 * @return input stream from which ring is read.
 	 * @param  is  input stream from which ring is read.
 	 */
 	virtual std::istream &read (std::istream &is) = 0;
-    
+
 	/** Print ring element.
 	 * This function assumes the ring element has already been 
 	 * constructed and initialized.
@@ -369,7 +364,7 @@ public:
 	 * @param  x   ring element.
 	 */
 	virtual std::ostream &write (std::ostream &os, const Element &x) const = 0;
-    
+
 	/** Read ring element.
 	 * This function assumes the ring element has already been 
 	 * constructed and initialized.
@@ -383,8 +378,17 @@ public:
 	 * @param  x   ring element.
 	 */
 	virtual std::istream &read (std::istream &is, Element &x) const = 0;
-    
+
+	/** Obtain the width in characters of a typical element
+	 *
+	 * This can be used to format the output of a matrix in a
+	 * readable way.
+	 */
+	virtual size_t elementWidth () const
+		{ integer c; return (cardinality (c) == 0) ? 10 : (size_t) ceil (log (c.get_d ()) / M_LN10); }
+
 	//@} Input/Output Operations
+
 	/** @name Standard elements
 	 */
 	//@{
@@ -400,7 +404,18 @@ public:
 
 	//@}
 	//@} Common Object Interface
-    
+
+	/** @name Reference-counting of elements
+	 *
+	 * These functions need not be implemented, but are useful for
+	 * memory-management with elements.
+	 */
+	//@{
+
+	virtual void refElement (Element &x) const {}
+	virtual void unrefElement (Element &x) const {}
+	
+	//@}
 }; // class RingInterface
   
 } // namespace LELA
