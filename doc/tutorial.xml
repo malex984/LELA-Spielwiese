@@ -101,15 +101,71 @@
       </para>
 
       <itemizedlist>
+	<listitem><type>Integers</type>, for integers (actually a
+	wrapper for GMP)</listitem>
+	<listitem><type>Rationals</type>, for rational numbers (also a
+	wrapper for GMP)</listitem>
 	<listitem><type>Modular</type>, for integers modulo n,</listitem>
-	<listitem><type>Rationals</type>, for rational numbers
-	(actually a wrapper for GMP)</listitem>
 	<listitem><type>GF2</type> (for fast computations over GF(2)),
 	and</listitem>
 	<listitem><type>TypeWrapperRing</type> (a wrapper around any
 	type which implements the basic arithmetic-operations +, -, *,
 	/, and %)</listitem>
       </itemizedlist>
+
+      <section xml:id="integers">
+	<title><type>Integers</type></title>
+
+	<para>
+	  To work with integers (of arbitrary precision), use the following:
+	</para>
+
+	<programlisting>
+#include &lt;lela/ring/integers.h&gt;
+
+using namespace LELA;
+
+int main ()
+{
+	Integers Z;
+	...
+	return 0;
+}
+	</programlisting>
+
+	<para>
+	  The element-type of <type>Integers</type> is called
+	  <type>integer</type>. It is defined in
+	  <filename>lela/integer.h</filename>.
+	</para>
+      </section>
+
+      <section xml:id="rationals">
+	<title><type>Rationals</type></title>
+
+	<para>
+	  To work with rational numbers, use the following:
+	</para>
+
+	<programlisting>
+#include &lt;lela/ring/rationals.h&gt;
+
+using namespace LELA;
+
+int main ()
+{
+	Rationals F;
+	...
+	return 0;
+}
+	</programlisting>
+
+	<para>
+	  The element-type of <type>Rationals</type> is
+	  called <type>RationalElement</type>. It is defined
+	  in <filename>lela/element/rational.h</filename>.
+	</para>
+      </section>
 
       <section xml:id="modularring">
 	<title><type>Modular</type></title>
@@ -223,33 +279,6 @@ int main ()
 	  double) are in <filename>lela/integer.h</filename>. The
 	  header-file <filename>lela/ring/modular.h</filename>
 	  declares the class <type>Modular</type>.
-	</para>
-      </section>
-
-      <section xml:id="rationals">
-	<title><type>Rationals</type></title>
-
-	<para>
-	  To work with rational numbers, use the following:
-	</para>
-
-	<programlisting>
-#include &lt;lela/ring/rationals.h&gt;
-
-using namespace LELA;
-
-int main ()
-{
-	Rationals F;
-	...
-	return 0;
-}
-	</programlisting>
-
-	<para>
-	  The element-type of <type>Rationals</type> is
-	  called <type>RationalElement</type>. It is defined
-	  in <filename>lela/element/rational.h</filename>.
 	</para>
       </section>
 
@@ -394,7 +423,7 @@ int main ()
 
 	uint8 a, b, c, d; // Declare ring-elements
 	F.init (a, -1);   // Set a to -1 in the ring
-	F.assign (b, a);  // Set b to a
+	F.copy (b, a);    // Copy a to b
 	F.negin (b);      // Replace b to -b
 	F.init (c, 2);    // Set c to 2 in the ring
 	F.addin (a, b);   // Set a &lt;- a + b
@@ -418,15 +447,15 @@ int main ()
 	</programlisting>
 
 	<para>
-	  The method <function>assign</function> makes a copy of its
+	  The method <function>copy</function> makes a copy of its
 	  second argument and stores it in its first argument. In
-	  generic code, it is recommended to
-	  use <function>assign</function> rather than the
+	  generic code, it is recommended to use
+	  <function>copy</function> rather than the
 	  assignment-operator, since the latter may result in only a
-	  shallow copy, depending on the element-type. In the case
-	  of <type>Modular&lt;uint8&gt;</type> above, the call
-	  <literal>assign (b, a)</literal> is entirely equivalent to
-	  the assignment <literal>b = a</literal>.
+	  shallow copy, depending on the element-type. In the case of
+	  <type>Modular&lt;uint8&gt;</type> above, the call
+	  <literal>copy (b, a)</literal> is entirely equivalent to the
+	  assignment <literal>b = a</literal>.
 	</para>
 
 	<para>
@@ -712,39 +741,6 @@ void MyAlgorithm (const Ring &amp;R)
 	R.init (v.back ().second, 10);
 }
 	  </programlisting>
-
-	  <para>
-	    The manner by which new entries are initialised is
-	    important: the pair must be appended to the vector with a
-	    newly constructed <type>Ring::Element</type> and the
-	    element must then be initialised by the ring. It is
-	    important for certain ring-types not merely to make a
-	    shallow copy of a ring-element into the vector. For
-	    example:
-	  </para>
-
-	  <programlisting>
-typename Vector&lt;Ring&gt;::Sparse v;
-
-// ERROR: The content of a may be destroyed when the function leaves, leaving the vector in an invalid state
-typename Ring::Element a;
-R.init (a, -1);
-v.push_back (typename Vector&lt;Ring&gt;::Sparse::value_type (0, a));
-
-// Correct
-v.push_back (typename Vector&lt;Ring&gt;::Sparse::value_type (0, Ring::Element ()));
-R.init (v.back ().second, -1);
-	  </programlisting>
-
-	  <para>
-	    If the element-type is simple (such as a C++ int) or is a
-	    class with a copy-constructor and assignment-operator
-	    which perform deep copies, then both methods above are
-	    equivalent. This is true for the type <type>integer</type>
-	    as well as elements of <type>Rationals</type>. However,
-	    when writing generic code parametrised by the ring, one
-	    should not assume that this is the case.
-	  </para>
 	</section>
 	<section xml:id="vecgf2">
 	  <title>Representation-types for GF(2)</title>
@@ -1880,20 +1876,19 @@ public:
 	  <listitem><varname>ring</varname>, a pointer to the ring.</listitem>
 	</itemizedlist>
 	Any method in your ring-class which initialises a ring-element
-	(that
-	is <function>init</function>, <function>assign</function>, <function>read</function>,
-	and all out-of-place arithmetic operations) must
-	initialise <emphasis>both</emphasis> <varname>ref</varname>
-	and <varname>ring</varname>.
+	(that is <function>init</function>, <function>copy</function>,
+	<function>read</function>, and all out-of-place arithmetic
+	operations) must initialise <emphasis>both</emphasis>
+	<varname>ref</varname> and <varname>ring</varname>.
       </para>
 
       <para>
 	The class <type>RingInterface</type> implements the virtual
-	methods <function>refElement</function>
-	and <function>unrefElement</function>, which are called in the
+	methods <function>ref</function> and
+	<function>unref</function>, which are called in the
 	copy-constructor and assignment-operator and in the destructor
-	of <type>ElementAbstract</type>, respectively
-	(provided <varname>ring</varname> is properly initialised).
+	of <type>ElementAbstract</type>, respectively (provided
+	<varname>ring</varname> is properly initialised).
       </para>
 
       <para>
@@ -1907,10 +1902,10 @@ class MyRing
 public:
 	typedef AbstractElement Element;
 
-	void refElement (Element &amp;x)
+	void ref (Element &amp;x)
 		{ if (x.ref != NULL) ++static_cast&lt;MyElement *&gt; (x.ref).refcount; }
 
-	void unrefElement (Element &amp;x)
+	void unref (Element &amp;x)
 	{
 		if (x.ref != NULL) {
 			--static_cast&lt;MyElement *&gt; (x.ref).refcount;
@@ -1922,7 +1917,7 @@ public:
 	Element &amp;add (Element &amp;a, const Element &amp;b, const Element &amp;c)
 	{
 		a.ring = this;
-		unrefElement (a);
+		unref (a);
 		static_cast&lt;MyElement *&gt; (a.ref) = new MyElement;  // Assume MyElement::refcount initialised to 1
 		*static_cast&lt;MyElement *&gt; (a.ref) = *static_cast&lt;MyElement *&gt; (b) + *static_cast&lt;MyElement *&gt; (c);
 		return a;
