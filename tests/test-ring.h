@@ -127,15 +127,28 @@ bool testRing (Ring &F, const char *title, bool ringp = true)
 	else
 		n -= 1;
 	
-	report << "Initial integer: " << n << endl;
-	F.init (a, n);
+	int i = n.get_ui();
+	
+	report << "Initial integer: " << i << endl;	
+	F.init (a, i);
 	F.write (report << "Result of init: ", a) << endl;
 
-	F.convert (m, a);
-	report << "Result of convert: " << m << endl;
+	int j;
 
-	if (m != n)
-		part_pass = reportError ("F.convert (m, F.init (a, n)) != n", pass);
+	F.convert (j, a);
+	report << "Result of convert: " << j << endl;
+
+	if (i != j)  // BUG???
+		part_pass = reportError ("F.convert (j, F.init (a, i)) != i", pass);
+
+	
+	F.write (report << "Result of F.init(F.convert(a)): ", F.init (b, j) ) << endl;
+	
+	if (!F.areEqual(a, b))  // ???
+		part_pass = reportError ("F.init(F.convert (a)) != a...", pass);
+
+//	assume( F.areEqual(a, b) );
+	
 
 	commentator.stop (MSG_STATUS (part_pass));
 	commentator.progress ();
@@ -165,8 +178,12 @@ bool testRing (Ring &F, const char *title, bool ringp = true)
 	F.init (f, -2);
 	F.write (report << "-2 via init: ", f) << endl;
 
+
 	if (!F.areEqual (a, f) || !F.areEqual (d, a)) 
 		part_pass = reportError ("Results of neg are incorrect", pass);
+
+//	assume( F.areEqual (d, a) );	
+//	assume( F.areEqual (a, f) );
 
 	F.sub (a, three, two);
 	F.write (report << "Result of 3 - 2: ", a) << endl;

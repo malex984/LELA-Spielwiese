@@ -135,9 +135,10 @@ class MyModularRandIter
 	 * Required by abstract base class.
 	 * @return reference to random field element
 	 */
-    unsigned int &random_ui (unsigned int &a) const
+    template< typename T>
+        T &random_ui (T &a) const
     {
-      return a = _MT.randomIntRange (0, _size.get_ui ());
+      return a = (T)_MT.randomIntRange (0, _size.get_ui ());
     }
     Element &random (Element &a) const
     {
@@ -178,8 +179,9 @@ class MyModular<E>::RandIter
     typedef typename MyModular<E>::Element Element;
 
     // Workaround?
-    unsigned int &random (unsigned int &a) const
-        { return _r.random (a); }
+    template< typename T>
+    T &random_ui (T &a) const
+        { return _r.random_ui (a); }
     
 
     Element &random (Element &a) const

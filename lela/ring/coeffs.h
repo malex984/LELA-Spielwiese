@@ -143,6 +143,11 @@ class CoeffDomain
       return x;
     }
 
+    Element &init (Element &x, const unsigned int &y) const
+    { 
+      return init(x, (int)(y));
+    }
+
     Element &init (Element &x, const LELA::integer &y) const
     {
       const int n = y.get_ui();
@@ -344,9 +349,8 @@ class CoeffDomain
     Element &neg (Element &x, const Element &y) const
     {
       assume( n_Test(y, _coeffs) );
-      x = n_Neg(n_Copy(y, _coeffs), _coeffs);
-      assume( n_Test(x, _coeffs) );      
-      return x;      
+      copy(x, y);
+      return negin(x);      
     }
 
     /** \brief Multiplicative Inverse, x <-- 1 / y.
@@ -558,10 +562,11 @@ class CoeffDomain
      */
     Element &negin (Element &x) const
     {
-      assume( n_Test(x, _coeffs) );     
-      n_Neg(x, _coeffs);
-      assume( n_Test(x, _coeffs) );     
+      assume( n_Test(x, _coeffs) );
       
+      x = n_Neg(x, _coeffs);
+      assume( n_Test(x, _coeffs) );     
+
       return x;
     }
 
@@ -693,7 +698,13 @@ class CoeffDomain
      */
     std::istream &read (std::istream &is, Element &x) const
     {
-      assume(FALSE); // not implemented yet!
+      int i;
+      
+      if ( is >> i ) // TODO: this is a workaround... since n_Read needs a string :(
+        init(x, i); // and those matrices are with integers anyway!
+      else
+        assume(FALSE); // not implemented yet!
+        
       return is;
     }
 
@@ -789,7 +800,17 @@ class CoeffDomain
     //@}
     //@} Common Object Interface
 
+      void cleanup(Element& v) const
+      {
+        assume( n_Test(v, _coeffs) );
+        n_Delete(&v, _coeffs);
+      }
 
+
+      bool test(Element& v) const
+      {
+        return n_Test(v, _coeffs);
+      }
     
 
 

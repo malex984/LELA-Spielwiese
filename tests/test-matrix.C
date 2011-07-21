@@ -96,6 +96,12 @@ int main (int argc, char **argv)
 
 	parseArguments (argc, argv, args);
 
+	commentator.setBriefReportParameters (Commentator::OUTPUT_CONSOLE, false, false, false);
+	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDepth (6);
+	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDetailLevel (Commentator::LEVEL_UNIMPORTANT);
+	commentator.getMessageClass (TIMING_MEASURE).setMaxDepth (3);
+//	commentator.setReportStream(cout); // For debug...
+	
 	typedef MyModular<uint32> Field;
 	typedef Field::Element Element;
 
@@ -103,10 +109,6 @@ int main (int argc, char **argv)
 
 	commentator.start ("Matrix-test-suite", "Matrix");
 
-	commentator.setBriefReportParameters (Commentator::OUTPUT_CONSOLE, false, false, false);
-	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDepth (6);
-	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDetailLevel (Commentator::LEVEL_UNIMPORTANT);
-	commentator.getMessageClass (TIMING_MEASURE).setMaxDepth (3);
 
 	RandomDenseStream<Field, DenseMatrix<Element>::Row> stream1 (F, n, m);
 	RandomSparseStream<Field, SparseMatrix<Element>::Row> stream2 (F, (double) k / (double) m, n, m);

@@ -38,13 +38,16 @@ using namespace std;
  * Test that the random iterator over the given ring works
  */
 
-template <class Element>
-bool testRandomIteratorStep (const Modular<Element> &F,
+template <class E>
+bool testRandomIteratorStep (const MyModular<E> &F,
 			     const char *text,
 			     unsigned int num_trials,
 			     unsigned int num_categories,
 			     unsigned int hist_len) 
 {
+        typedef MyModular<E> Ring;
+        typedef typename Ring::Element Element;
+   
 	//std::ostringstream str;
 
 	//str << "Testing " << text << "::RandIter" << std::ends;
@@ -59,12 +62,12 @@ bool testRandomIteratorStep (const Modular<Element> &F,
 	std::vector<int> categories1 (num_categories, 0);
 	std::vector<int> categories2 (num_categories, 0);
 	std::list<std::vector<int> > diff_categories;
-	std::list<Element> x_queue;
+	std::list<E> x_queue;
 
 	F.cardinality (card);
 
-	typename Modular<Element>::RandIter iter (F);
-	Element x,  d;
+	typename Ring::RandIter iter (F);
+	E x;
 
 	std::list<std::vector<int> >::iterator diff_cat_iter;
 
@@ -75,19 +78,32 @@ bool testRandomIteratorStep (const Modular<Element> &F,
 	// C++ ints. Otherwise, I don't know how to place the numbers into
 	// categories in any well-defined manner.
 	for (i = 0; i < num_trials; ++i) {
-		iter.random (x);
+		
+		iter.random_ui (x);
 		integer ix (x), ixmodn;
 		ixmodn = ix % num_categories;
 		categories1[ixmodn.get_ui ()]++;
 		categories2[(unsigned int) (ix.get_d () / card.get_d () * num_categories)]++;
 
-		typename std::list<Element>::iterator x_queue_iter = x_queue.begin ();
+		typename std::list<E>::iterator x_queue_iter = x_queue.begin ();
 		diff_cat_iter = diff_categories.begin ();
 
-		for (; x_queue_iter != x_queue.end (); ++x_queue_iter, ++diff_cat_iter) {
-			integer id (F.sub (d, *x_queue_iter, x));
-			ixmodn = id % num_categories;
+		for (; x_queue_iter != x_queue.end (); ++x_queue_iter, ++diff_cat_iter)
+		{	
+			Element a, b;
+			F.init(a, *x_queue_iter);
+			F.init(b, x);
+			
+			F.subin (a, b);
+				
+			integer id;
+			
+			ixmodn = (F.convert( id, a )) % num_categories;
+			
 			(*diff_cat_iter)[ixmodn.get_ui ()]++;
+
+			F.cleanup(a);
+			F.cleanup(b);
 		}
 
 		x_queue.push_front (x);
@@ -158,12 +174,15 @@ bool testRandomIteratorStep (const Modular<Element> &F,
  * Test up to five times, accepting any one, to increase probability of 
  * passing statistical tests.
  */
-template <class Element>
-bool testRandomIterator (const Modular<Element> &F, const char *text,
+template <class E>
+bool testRandomIterator (const MyModular<E> &F, const char *text,
 			 unsigned int num_trials,
 			 unsigned int num_categories,
 			 unsigned int hist_len) 
 {
+        typedef MyModular<E> Ring;
+//        typedef typename Ring::Element Element;
+   
 	std::ostringstream str;
 
 	str << "Testing " << text << "::RandIter" << std::ends;
@@ -211,29 +230,33 @@ int main (int argc, char **argv)
 
 	parseArguments (argc, argv, args);
 
-	commentator.start("MyModular test suite", "MyModular ");
-	bool pass = true;
-
-//	MyModular<integer> F_integer (q1);
-	MyModular<uint32> F_uint32 (q2.get_ui ());
-	MyModular<uint16> F_uint16 (q3.get_ui ());
-	MyModular<uint8> F_uint8 ((uint8) q4);
-//	MyModular<float> F_float ((float) q4);
-
 	// Make sure some more detailed messages get printed
 	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDepth (6);
 	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDetailLevel (Commentator::LEVEL_UNIMPORTANT);
 
-//	if (!runRingTests (F_integer, "MyModular<integer>", iterations, false)) pass = false;
-	if (!runRingTests (F_uint32,  "MyModular<uint32>",  iterations, false)) pass = false;
-	if (!runRingTests (F_uint16,  "MyModular<uint16>",  iterations, false)) pass = false;
+//	commentator.setReportStream(cout); // For debug...
+	
+	commentator.start("MyModular test suite", "MyModular ");
+	bool pass = true;
+
+	MyModular<uint8> F_uint8 ((uint8) q4);
 	if (!runRingTests (F_uint8,  "MyModular<uint8>",  iterations, false)) pass = false;
+	if (!testRandomIterator (F_uint8,  "MyModular<uint8>", trials, categories, hist_level)) pass = false;
+
+	MyModular<uint16> F_uint16 (q3.get_ui ());
+	if (!runRingTests (F_uint16,  "MyModular<uint16>",  iterations, false)) pass = false;
+	if (!testRandomIterator (F_uint16,  "MyModular<uint16>", trials, categories, hist_level)) pass = false;
+	
+	MyModular<uint32> F_uint32 (q2.get_ui ());
+	if (!runRingTests (F_uint32,  "MyModular<uint32>",  iterations, false)) pass = false;
+	if (!testRandomIterator (F_uint32,  "MyModular<uint32>", trials, categories, hist_level)) pass = false;
+	
+//	MyModular<float> F_float ((float) q4);
 //	if (!runRingTests (F_float,  "MyModular<float>",  iterations, false)) pass = false;
 
-	//if (!testRandomIterator (F_integer, "MyModular<integer>", trials, categories, hist_level)) pass = false;
-	if (!testRandomIterator (F_uint32,  "MyModular<uint32>", trials, categories, hist_level)) pass = false;
-	if (!testRandomIterator (F_uint16,  "MyModular<uint16>", trials, categories, hist_level)) pass = false;
-	if (!testRandomIterator (F_uint8,  "MyModular<uint8>", trials, categories, hist_level)) pass = false;
+//	MyModular<integer> F_integer (q1);
+//	if (!runRingTests (F_integer, "MyModular<integer>", iterations, false)) pass = false;
+//	if (!testRandomIterator (F_integer, "MyModular<integer>", trials, categories, hist_level)) pass = false;
 
 	commentator.stop (MSG_STATUS (pass));
 	return pass ? 0 : -1;

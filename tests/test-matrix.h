@@ -89,7 +89,6 @@ bool testColIterator (const Field &F, const Matrix &M)
 	typename Matrix::ConstColIterator j_M;
 	size_t i, j;
 
-	typename Field::Element a;
 
 	for (j_M = M.colBegin (), j = 0; j_M != M.colEnd (); ++j_M, ++j) {
 		if (j >= M.coldim ()) {
@@ -99,32 +98,49 @@ bool testColIterator (const Field &F, const Matrix &M)
 			break;
 		}
 
-		for (i = 0; i < M.coldim (); ++i) {
-			if (M.getEntry (a, i, j)) {
-				typename Field::Element b;
+		for (i = 0; i < M.coldim (); ++i)
+		{
+			typename Field::Element a;
+			if (M.getEntry (a, i, j))
+			{
+				if ( F.test(a) ) // BUG?: This will fail a lot...
+				{
 
-				if (!VectorUtils::getEntry<typename Field::Element, typename Matrix::ConstCol> (*j_M, b, i)) {
-					std::ostream &error = commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR);
-					error << "ERROR: Entry at position (" << i << "," << j << ") is not present in column-vector (should be ";
-					F.write (error, a) << ")" << std::endl;
-					pass = false;
-				}
-				else if (!F.areEqual (a, b)) {
-					std::ostream &error = commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR);
-					error << "ERROR: Entry at position (" << i << "," << j << ") is ";
-					F.write (error, b) << " (should be ";
-					F.write (error, a) << ")" << std::endl;
-					pass = false;
-				}
+					typename Field::Element b;
+
+					if (!VectorUtils::getEntry<typename Field::Element, typename Matrix::ConstCol> (*j_M, b, i)) {
+						std::ostream &error = commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR);
+						error << "ERROR: Entry at position (" << i << "," << j << ") is not present in column-vector (should be ";
+						F.write (error, a) << ")" << std::endl;
+						pass = false;
+					}
+					else
+					{
+						assert( F.test(b) );
+						if (!F.areEqual (a, b))
+						{
+							std::ostream &error = commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR);
+							error << "ERROR: Entry at position (" << i << "," << j << ") is ";
+							F.write (error, b) << " (should be ";
+							F.write (error, a) << ")" << std::endl;
+							pass = false;
+						}
+					}
+				} else
+					assume( F.test(a) ); // can fail....!?
+				
+					
 			} else {
 				typename Field::Element b;
 
-				if (VectorUtils::getEntry<typename Field::Element, typename Matrix::ConstCol> (*j_M, b, i) && !F.isZero (b)) {
+				if (VectorUtils::getEntry<typename Field::Element, typename Matrix::ConstCol> (*j_M, b, i) && !F.isZero (b))
+				{
 					std::ostream &error = commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR);
 					error << "ERROR: getEntry reports entry at position (" << i << "," << j << ") does not exist, but ref reports ";
 					F.write (error, b) << std::endl;
 					pass = false;
 				}
+				assume( F.test(b) );
 			}
 		}
 	}
