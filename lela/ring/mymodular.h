@@ -137,13 +137,13 @@ class MyModularRandIter
 	 * Required by abstract base class.
 	 * @return reference to random field element
 	 */
-    unsigned int &random (unsigned int &a) const
+    unsigned int &random_ui (unsigned int &a) const
     {
       return a = _MT.randomIntRange (0, _size.get_ui ());
     }
     Element &random (Element &a) const
     {
-      unsigned int n; random(n);
+      unsigned int n; random_ui(n);
       return _F.init (a, (int)n);
     }
 

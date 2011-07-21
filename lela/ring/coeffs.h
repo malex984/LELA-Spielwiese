@@ -27,9 +27,7 @@
 
 /** Singular coefficient domain
  *
- * This class defines the ring-interface. It is an abstract base-class
- * from which rings may be derived, though this is not required
- * provided that a ring satisfy this interface.
+ * This class defines the ring-interface for general Singular coefficients.
  */
 
 class CoeffDomain
@@ -74,36 +72,30 @@ class CoeffDomain
       }
     }
 
-    /** @name Common Object Interface for a LinBox Ring.
-     * These methods are required of all \ref{LinBox} rings.
+    /** @name Singular coeffs Interface as a LELA Ring.
+     * These methods are required of all \ref{LELA} rings.
      */
     //@{
 
     /// the type in which ring elements are represented.
     typedef number Element;
 
-//!//    /// An object of this type is a generator of random ring elements.
-//!//    typedef RandIterInterface RandIter;
+//TODO!//    /// An object of this type is a generator of random ring elements.
+//TODO!//    typedef RandIterInterface RandIter;
 
     /// @name Object Management
     //@{
 
-    /** \brief Initialization of ring element from an integer.
-     *
-     * x becomes the image of n under the natural map from the integers
-     * to the prime subring.  It is the result obtained from adding n 1's 
-     * in the ring.
-     *
-     * This function assumes the output ring element x
-     * has already been constructed, but that it is not
-     * necessarily already initialized. In this
-     * archetype implementation, this means the <tt> _elem_ptr</tt> of
-     * x exists, but that it may be the null pointer.
-     *
-     * @return reference to x.
-     * @param x output ring element.
-     * @param n input integer.
-     */
+  /** \brief Initialization of ring element from an integer.
+	 *
+	 * x becomes the image of n under the natural map from the
+	 * integers to the ring. The element x need not have been
+	 * previously initialised.
+	 *
+	 * @return reference to x.
+	 * @param x output ring element.
+	 * @param n input integer.
+	 */
     Element &init (Element &x, const int i = 0) const
     {
       x = n_Init(i, _coeffs);
@@ -128,6 +120,15 @@ class CoeffDomain
       return init(x, (int)(y+.5));
     }
 
+    /// Version of init which takes a Property rather than an element.
+    ///
+    /// It should do exactly what the version above taking an element does.
+    template <class Iterator, class Accessor, class T>
+        Element &init (LELA::Property<Iterator, Accessor> x, const T &n = 0) const
+        { return init (x.ref (), n); }
+
+
+    
     /** \brief Conversion of ring element to an integer.  The
      * meaning of conversion is specific to each ring
      * class. However, if x is in the image of the integers in the
@@ -167,21 +168,28 @@ class CoeffDomain
     
 
 
-    /** \brief  Assignment of one ring element to another.
-     *
-     * This function assumes both ring elements have already been 
-     * constructed and initialized.
-     *
-     * @return reference to x
-     * @param  x destination ring element.
-     * @param  y source ring element.
-     */
-    Element &assign (Element &x, const Element &y) const
+  /** \brief  Copy one ring element to another.
+	 *
+	 * This function makes a deep copy of the element y into the
+	 * element x (as opposed to the assignment-operator, which
+	 * makes only a shallow copy). The element x need not have
+	 * been previously initialised.
+	 *
+	 * @return reference to x
+	 * @param  x destination ring element.
+	 * @param  y source ring element.
+	 */
+    Element &copy (Element &x, const Element &y) const
     {
-      assume( n_Test(y, _coeffs) );
-      x = y; //????
-      return x = y; 
+      return x = n_Copy(y, _coeffs);
     }
+
+    /// Version of copy which takes a Property rather than an element.
+    ///
+    /// It should do exactly what the version above taking an element does.
+    template <class Iterator, class Accessor>
+        Element &copy (LELA::Property<Iterator, Accessor> x, const Element &y) const
+        { return copy (x.ref (), y); }
 
     /** \brief Cardinality.
      *
@@ -190,9 +198,9 @@ class CoeffDomain
      * cardinality, and 0 to signify a ring of infinite
      * cardinality.
      */
-    int &cardinality (int &c) const
+    virtual int &cardinality (int &c) const
     {
-      return characteristic(c); // for the time being...
+      return characteristic(c); // TODO: Overwrite it in speciall cases...?
     }
     
     LELA::integer &cardinality (LELA::integer &c) const
@@ -205,9 +213,10 @@ class CoeffDomain
     /** \brief Characteristic.
      *
      * Return c, integer representing characteristic of the ring
-     * (the least positive n such that the sum of n copies of x is 0 for all ring elements x).
-     * c becomes a positive integer for all rings with finite characteristic,
-     * and 0 to signify a ring of infinite characteristic.
+     * (the least positive n such that the sum of n copies of x is
+     * 0 for all ring elements x).  c becomes a positive integer
+     * for all rings with finite characteristic, and 0 to signify
+     * a ring of infinite characteristic.
      */
     LELA::integer &characteristic (LELA::integer &c) const
     {
@@ -504,13 +513,10 @@ class CoeffDomain
      * @param  x Property (reference returned).
      * @param  y ring element.
      */
-   template <class Iterator, class Accessor>
-    LELA::Property<Iterator, Accessor> &mulin (LELA::Property<Iterator, Accessor> &x, const Element &y) const
-    {
-      Element t = x;
-      mulin (t, y);
-      return x = t;
-    }
+      template <class Iterator, class Accessor>
+          Element &mulin (LELA::Property<Iterator, Accessor> x, const Element &y) const
+          { return mulin (x.ref (), y); }
+
 
     /** Inplace Division; x /= y
      *
@@ -693,6 +699,15 @@ class CoeffDomain
       return is;
     }
 
+    /** Obtain the width in characters of a typical element
+     *
+     * This can be used to format the output of a matrix in a
+     * readable way.
+     */
+    virtual size_t elementWidth () const
+        { LELA::integer c; return (cardinality (c) == 0) ? 10 : (size_t) ceil (log (c.get_d ()) / M_LN10); }
+    
+
     //@} Input/Output Operations
     /** @name Standard elements
      */
@@ -725,6 +740,19 @@ class CoeffDomain
       return _minus_one;      
     }
 
+    /** @name Reference-counting of elements
+     *
+     * These functions need not be implemented, but are useful for
+     * memory-management with elements.
+     */
+    //@{
+
+    virtual void ref (Element &x) const {}
+    virtual void unref (Element &x) const {}
+
+  //@}
+
+    
     //@}
     //@} Common Object Interface
 
