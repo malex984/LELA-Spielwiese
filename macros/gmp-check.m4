@@ -24,7 +24,7 @@ echo "GMP_HOME_PATH: $GMP_HOME_PATH"
 min_gmp_version=ifelse([$1], ,1.0,$1)
 
 dnl Check for existence
-BACKUP_CFLAGS=${CFLAGS}
+BACKUP_CPPFLAGS=${CPPFLAGS}
 BACKUP_LIBS=${LIBS}
 
 AC_MSG_CHECKING(for GMP >= $min_gmp_version)
@@ -41,7 +41,7 @@ for GMP_HOME in ${GMP_HOME_PATH}
 			GMP_LIBS="-lgmp -lgmpxx"		
 		fi
 	
-		CFLAGS="${CFLAGS} ${GMP_CFLAGS}"
+		CPPFLAGS="${CPPFLAGS} ${GMP_CFLAGS}"
 		LIBS="${LIBS} ${GMP_LIBS}"
 
 		AC_TRY_LINK(
@@ -113,7 +113,7 @@ if test "x$gmp_found" != "xyes"; then
 fi
 
 
-CFLAGS=${BACKUP_CFLAGS}
+CPPFLAGS=${BACKUP_CPPFLAGS}
 LIBS=${BACKUP_LIBS}
 #unset LD_LIBRARY_PATH
 

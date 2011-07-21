@@ -133,8 +133,8 @@ if test "x$LELA_UINT256" != "x"; then
 fi
 
 # Feature checks
-LB_MISC
-LB_DRIVER
+# LB_MISC
+# LB_DRIVER
 
 
 LB_CHECK_GMP(3.1.1,,AC_MSG_ERROR([Unable to find GMP on your machine: please use --with-gmp=PATH_TO_DIR_CONTAINING_LIB_AND_INCLUDE (see also ./configure --help if you do not understand what we are talking about)]))
@@ -152,11 +152,11 @@ LB_CHECK_GMP(3.1.1,,AC_MSG_ERROR([Unable to find GMP on your machine: please use
 
 AC_LANG_CPLUSPLUS
 
-LB_CHECK_MAPLE
-LB_CHECK_SAGE
-#LB_CHECK_ATLAS
+# LB_CHECK_MAPLE
+# LB_CHECK_SAGE
+# LB_CHECK_ATLAS
 LB_CHECK_BLAS
-LB_CHECK_EXPAT
+# LB_CHECK_EXPAT
 LB_CHECK_M4RI
 LB_CHECK_PNG
 
