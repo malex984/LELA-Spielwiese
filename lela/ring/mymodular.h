@@ -24,14 +24,11 @@ class MyModular: public CoeffDomain
   
   void InitMe(unsigned long modulus)
   {
-    if( _coeffs != NULL )
-      if( _clean_coeffs )
-        nKillChar(_coeffs);
-
-    _coeffs = nInitChar( n_Zp, (void*) modulus );
-    assume( _coeffs != NULL);
-    _clean_coeffs = true;
+    Base::InitMe(n_Zp, (void*) modulus);
   }
+
+  private:
+    MyModular& operator=(const MyModular&);
 
   public:    
     typedef typename Base::Element Element;
@@ -70,6 +67,7 @@ class MyModularRandIter
 {
   public:
     typedef typename MyModular<E>::Element Element;
+    typedef MyModular<E> BaseRing;
 
   /** Constructor from field, sampling size, and seed.
 	 * The random field element iterator works in the field F, is seeded
@@ -84,7 +82,7 @@ class MyModularRandIter
 	 * @param seed constant integer reference from which to seed random number
 	 *             generator (default = 0)
 	 */
-    MyModularRandIter (const MyModular<E> &F, 
+    MyModularRandIter (const BaseRing &F, 
                      const LELA::integer &size = 0, 
                      const LELA::integer &seed = 0)
         : _MT (seed.get_ui ()), _F (F), _size (size), _seed (seed.get_ui ())
@@ -151,7 +149,7 @@ class MyModularRandIter
     LELA::MersenneTwister _MT;
 
   /// Field in which arithmetic is done
-    MyModular<E> _F;
+    const BaseRing& _F;
 
   /// Sampling size
     LELA::integer _size;

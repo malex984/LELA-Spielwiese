@@ -210,19 +210,20 @@ bool  MyArithTest (const Ring &R) //  , typename Ring::Element &v
     BLAS3::write(ctx, report << "S: " << endl, S, FORMAT_SAGE) << endl << flush;
 
 
-    //    MDense  DD(2*N, 2*N); MSparse SS(2*N, 2*N);
+    MDense  DD(2*N, 2*N); MSparse SS(2*N, 2*N);
 
 
-    // The following is buggy for GF5^2 ('1' for zeroes) and somewhat for QQ ('o'!?)
-    BLAS3::write(ctx, report << "D = S: " << endl, BLAS3::copy(ctx, S, D), FORMAT_SAGE) << endl << flush;
-    //    BLAS3::write(ctx, report << "SS = D: ", BLAS3::copy(ctx, D, SS), FORMAT_SAGE) << endl << flush;
+    // The following is buggy for GF5^2 ('1' for zeroes) and somewhat
+    // for QQ ('o'!?)
+    BLAS3::copy(ctx, S, D);
+    BLAS3::write(ctx, report << "D = S: " << endl, D, FORMAT_SAGE) << endl << flush;
 
-
+    BLAS3::write(ctx, report << "SS = D: ", BLAS3::copy(ctx, D, SS), FORMAT_SAGE) << endl << flush;
 
 
     VSparse ww; BLAS1::write(ctx, report << "ww = v: ", BLAS1::copy(ctx, v, ww)) << endl << flush;
 
-    //:(//    VDense  vv(2*N); BLAS1::write(ctx, report << "vv = w: ", BLAS1::copy(ctx, w, vv)) << endl << flush;
+    VDense  vv(2*N); BLAS1::write(ctx, report << "vv = w: ", BLAS1::copy(ctx, w, vv)) << endl << flush;
 
     EchelonForm<Ring> EF(ctx);
 
@@ -272,10 +273,6 @@ bool  MyArithTest (const Ring &R) //  , typename Ring::Element &v
 
 
 
-bool TestLinbox(coeffs r)
-{
-  return MyArithTest(CoeffDomain(r)); 
-}
 
 
 BOOLEAN Test(const n_coeffType type, void* param)
@@ -330,8 +327,8 @@ BOOLEAN Test(const n_coeffType type, void* param)
 
 
 
-  if( !TestLinbox(r) )
-    return FALSE; 
+//  if( !TestLinbox(r) )
+  return ret; 
 
 /*
 
@@ -411,12 +408,24 @@ BOOLEAN Test(const n_coeffType type, void* param)
 BOOLEAN simple(const string tn, const n_coeffType _type, void* param = NULL)
 {
   bool pass = true;
-  string title = "MyArithTest ( CoeffDomain(_type, param) ) for [" + tn + "]";
-  
-  commentator.start (title.c_str(), __FUNCTION__);
   try
   {
-    pass = Test(_type, param);
+    {
+      string title = "Test ( _type, param ) for [" + tn + "]";
+      commentator.start (title.c_str(), __FUNCTION__);
+      
+      pass = Test(_type, param);
+      
+      commentator.stop (MSG_STATUS (pass)); 
+    }
+    {
+      string title = "MyArithTest ( CoeffDomain(_type, param) ) for [" + tn + "]";
+      commentator.start (title.c_str(), __FUNCTION__);
+
+      pass = MyArithTest(CoeffDomain(_type, param)) && pass; 
+
+      commentator.stop (MSG_STATUS (pass)); 
+    }
   }
   catch (LELAError e)
   {
@@ -427,8 +436,6 @@ BOOLEAN simple(const string tn, const n_coeffType _type, void* param = NULL)
     commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR)
         << "No idea.... :(" << std::endl;
   }
-  commentator.stop (MSG_STATUS (pass)); 
-  
   return pass;
 }
 
@@ -465,10 +472,6 @@ bool TestLinbox()
 
 
 
-
-
-
-
 //#ifdef HAVE_FACTORY
 //int initializeGMP(){ return 1; }
 //#endif
@@ -489,13 +492,14 @@ int main (int argc, char **argv)
   commentator.getMessageClass (TIMING_MEASURE).setMaxDepth (3);
 
 //  commentator.setBriefReportStream(cout);
+//  commentator.setReportStream(cout);
 //  commentator.setDefaultReportFile("ForBrad.log");
 
   commentator.start ("Singular Coeffs", "");
 
 //  pass = testAdd () && pass;
 
-  feInitResources( __LELA_LIBPOLYS_HOME );
+  feInitResources( __LELA_LIBPOLYS_HOME "/");
 
   StringSetS("ressources in use (as reported by feStringAppendResources(0):\n");
   feStringAppendResources(0);

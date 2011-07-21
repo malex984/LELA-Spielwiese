@@ -32,25 +32,12 @@
 
 class CoeffDomain
 {
-  public:
-    CoeffDomain(): _coeffs( NULL ), _clean_coeffs(false) {}
+  private:
+    CoeffDomain& operator=(const CoeffDomain&);
 
-    
-    CoeffDomain(const n_coeffType type, void* p = NULL): _coeffs(nInitChar( type, p )), _clean_coeffs(true)
-    {
-      assume (_coeffs != NULL);
-    }
-    
-    CoeffDomain(coeffs &r): _coeffs(r), _clean_coeffs(false)
-    {
-      assume(r!= NULL); // Note: no exceptions there! Right?!
+  protected:
 
-      _zero = n_Init(0, _coeffs); // When do we clean these???
-      _one  = n_Init(1, _coeffs);
-      _minus_one = n_Init(-1, _coeffs);
-    }
-
-    ~CoeffDomain()
+    void CleanMe()
     {
       if (_coeffs != NULL)
       {
@@ -69,9 +56,61 @@ class CoeffDomain
 
         if (_clean_coeffs)
           nKillChar(_coeffs);
+        
+        _type = n_unknown;
+        _param = NULL;        
       }
     }
 
+    void InitMe(coeffs R, bool cleanup)
+    {
+      CleanMe();
+      
+      assume (R != NULL);
+
+      _coeffs = R;
+
+      _zero = n_Init(0, _coeffs);
+      _one  = n_Init(1, _coeffs);
+      _minus_one = n_Init(-1, _coeffs);
+
+      _clean_coeffs = cleanup;
+      
+
+    }
+
+    
+    void InitMe(n_coeffType type, void* p)
+    {
+      InitMe( nInitChar( type, p ), true);
+        
+      _type = type;
+      _param = p;
+    }
+    
+  public:
+    
+    CoeffDomain(): _coeffs( NULL ), _clean_coeffs(false) {}
+
+    
+    CoeffDomain(n_coeffType type, void* p = NULL): _coeffs( NULL ), _clean_coeffs(false)
+    {
+      InitMe(type, p);
+    }
+
+    CoeffDomain(const CoeffDomain& D): _coeffs( NULL ), _clean_coeffs(false)
+    {
+      InitMe(D._type, D._param);
+    }
+    
+
+    ~CoeffDomain()
+    {
+      CleanMe();
+    }
+
+//    CoeffDomain(coeffs &r): _coeffs(r), _clean_coeffs(false)    { InitMe();    }
+    
     /** @name Singular coeffs Interface as a LELA Ring.
      * These methods are required of all \ref{LELA} rings.
      */
@@ -126,46 +165,6 @@ class CoeffDomain
     template <class Iterator, class Accessor, class T>
         Element &init (LELA::Property<Iterator, Accessor> x, const T &n = 0) const
         { return init (x.ref (), n); }
-
-
-    
-    /** \brief Conversion of ring element to an integer.  The
-     * meaning of conversion is specific to each ring
-     * class. However, if x is in the image of the integers in the
-     * ring, the integer n returned is such that an init from n
-     * will reproduce x. Most often 0 &leq; n &lt; characteristic.
-     *
-     * @return reference to n.
-     * @param n output integer.
-     * @param x input ring element.
-     */
-    int &convert (int &n, const Element &y) const
-    {
-      assume( n_Test(y, _coeffs) );
-      Element t = n_Copy(y, _coeffs);
-      assume( n_Test(t, _coeffs) );
-      n = n_Int(t, _coeffs);
-      assume( n_Test(t, _coeffs) );
-      n_Delete(&t, _coeffs);      
-      return n;
-    }
-
-    LELA::integer &convert (LELA::integer &x, const Element &y) const 
-    {
-      int n; convert (n, y); return x = LELA::integer(n);      
-    }
-
-    double &convert (double &x, const Element &y) const
-    {
-      int n; convert (n, y); return  x = (double) n;
-    }
-    
-    float &convert (float &x, const Element &y) const
-    {
-      int n; convert (n, y); return  x = (float) n;
-    }
-
-    
 
 
   /** \brief  Copy one ring element to another.
@@ -610,7 +609,6 @@ class CoeffDomain
       
       n_InpMult(t, x, _coeffs);
       assume( n_Test(t, _coeffs) );
-
       Element s = n_Add(r, t, _coeffs);
       assume( n_Test(s, _coeffs) );
       
@@ -749,17 +747,58 @@ class CoeffDomain
 
     virtual void ref (Element &x) const {}
     virtual void unref (Element &x) const {}
-
-  //@}
-
     
+    //@}
+
+      /** \brief Conversion of ring element to an integer.  The
+       * meaning of conversion is specific to each ring
+       * class. However, if x is in the image of the integers in the
+       * ring, the integer n returned is such that an init from n
+       * will reproduce x. Most often 0 &leq; n &lt; characteristic.
+       *
+       * @return reference to n.
+       * @param n output integer.
+       * @param x input ring element.
+       */
+      int &convert (int &n, const Element &y) const
+      {
+        assume( n_Test(y, _coeffs) );
+        Element t = n_Copy(y, _coeffs);
+        assume( n_Test(t, _coeffs) );
+        n = n_Int(t, _coeffs);
+        assume( n_Test(t, _coeffs) );
+        n_Delete(&t, _coeffs);      
+        return n;
+      }
+
+      LELA::integer &convert (LELA::integer &x, const Element &y) const 
+      {
+        int n; convert (n, y); return x = LELA::integer(n);      
+      }
+
+      double &convert (double &x, const Element &y) const
+      {
+        int n; convert (n, y); return  x = (double) n;
+      }
+
+      float &convert (float &x, const Element &y) const
+      {
+        int n; convert (n, y); return  x = (float) n;
+      }
+
     //@}
     //@} Common Object Interface
 
 
-  protected:
+    
+
+
+  private:
     coeffs _coeffs;
     bool _clean_coeffs;
+
+    n_coeffType _type;
+    void* _param;
     
     Element _one; // = n_Init(1, _coeffs);
     Element _zero; // = n_Init(0, _coeffs); // When do we clean these???
@@ -779,6 +818,11 @@ int initializeGMP(){ return 1; }
 //#endif
 #endif 
 
+
+#include "lela/blas/level1-generic.h"
+#include "lela/blas/level2-generic.h"
+#include "lela/blas/level3-generic.h"
+#include "lela/blas/level3-sw.h"
 
 
 #endif /* __LELA_HAVE_LIBPOLYS */

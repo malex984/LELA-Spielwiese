@@ -150,6 +150,7 @@ test_faugere_lachartre_SOURCES = \
         test-common.C                \
         test-faugere-lachartre.C
 
+# export SINGULARPATH=/GITHUB/w/LINBOX/share/gftables
 test_coeffs_SOURCES = \
         test-coeffs.C \
         test-common.C

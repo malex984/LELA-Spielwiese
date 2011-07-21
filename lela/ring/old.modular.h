@@ -644,21 +644,21 @@ struct AllModules<Modular<Element> > : public StrassenModule<Modular<Element>, Z
 
 } // namespace LELA
 
-/*
-#include "lela/blas/level1-modular.h"
-#include "lela/blas/level2-modular.h"
-#include "lela/blas/old.level3-modular.h"
-
 #include "lela/blas/level1-generic.h"
 #include "lela/blas/level2-generic.h"
 #include "lela/blas/level3-generic.h"
 
-#include "lela/blas/level1-modular.tcc"
-#include "lela/blas/level2-modular.tcc"
+/*
+#include "lela/blas/old.level1-modular.h"
+#include "lela/blas/old.level2-modular.h"
+#include "lela/blas/old.level3-modular.h"
+
+#include "lela/blas/old.level1-modular.tcc"
+#include "lela/blas/old.level2-modular.tcc"
 #include "lela/blas/old.level3-modular.tcc"
+*/
 
 #include "lela/blas/level3-sw.h"
-*/
 
 #include "lela/randiter/old.modular.h"
 
