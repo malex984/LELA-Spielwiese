@@ -232,7 +232,7 @@ bool  MyArithTest (const Ring &R) //  , typename Ring::Element &v
     {
       BLAS3::write(ctx, report << "red RowEchelonForm(D): " << endl, EF.RowEchelonForm(D, true), FORMAT_SAGE);
     }
-    catch (LinboxError e)
+    catch (LELAError e)
     {
       commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR) << e;
     }
@@ -246,7 +246,7 @@ bool  MyArithTest (const Ring &R) //  , typename Ring::Element &v
     {
       BLAS3::write(ctx, report << "red RowEchelonForm(S): " << endl, EF.RowEchelonForm(S, true), FORMAT_SAGE); 
     }
-    catch (LinboxError e)
+    catch (LELAError e)
     {
       commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR) << e;
     }
@@ -418,7 +418,7 @@ BOOLEAN simple(const string tn, const n_coeffType _type, void* param = NULL)
   {
     pass = Test(_type, param);
   }
-  catch (LinboxError e)
+  catch (LELAError e)
   {
     commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR) << e;
   }
@@ -446,7 +446,7 @@ bool TestLinbox()
   {
     pass = MyArithTest(F);
   }
-  catch (LinboxError e)
+  catch (LELAError e)
   {
     commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR) << e;
   }
