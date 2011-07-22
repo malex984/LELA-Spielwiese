@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "lela/integer.h"
-#include "lela/ring/modular.h"
+#include "lela/ring/mymodular.h"
 #include "lela/ring/gf2.h"
 #include "lela/vector/sparse.h"
 
@@ -31,7 +31,7 @@ int main (int argc, char **argv)
 
 	parseArguments (argc, argv, args);
 
-	typedef Modular<uint32> Ring;
+	typedef MyModular<uint32> Ring;
 
 	Ring R (q);
 	GF2 gf2;

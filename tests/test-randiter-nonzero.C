@@ -17,7 +17,6 @@
 
 #include "lela/util/commentator.h"
 #include "lela/ring/mymodular.h"
-// #include "lela/randiter/modular.h"
 #include "lela/randiter/nonzero.h"
 
 #include "test-common.h"

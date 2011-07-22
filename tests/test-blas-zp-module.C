@@ -12,7 +12,7 @@
 
 #include "lela/util/commentator.h"
 #include "lela/blas/context.h"
-#include "lela/ring/modular.h"
+#include "lela/ring/mymodular.h"
 #include "lela/matrix/dense.h"
 #include "lela/matrix/sparse.h"
 #include "lela/vector/stream.h"

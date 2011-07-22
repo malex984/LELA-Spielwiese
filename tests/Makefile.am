@@ -35,12 +35,13 @@ BASIC_TESTS =  \
 	test-matrix		\
         test-blas-generic-module     \
 	test-blas-generic-module-gf2 \
-        test-blas-zp-module     \
 	test-strassen-winograd	\
 	test-elimination	\
 	test-gauss-jordan	\
 	test-faugere-lachartre  \
 	test-coeffs
+
+#        test-blas-zp-module     
 
 # a benchmarker, not to be included in check.
 BENCHMARKS =            \
@@ -105,12 +106,12 @@ test_blas_generic_module_gf2_SOURCES = \
         test-blas-level3.h             \
         test-common.C
 
-test_blas_zp_module_SOURCES =   \
-        test-blas-zp-module.C   \
-        test-blas-level1.h           \
-        test-blas-level2.h           \
-        test-blas-level3.h           \
-        test-common.C
+#test_blas_zp_module_SOURCES =   \
+#        test-blas-zp-module.C   \
+#        test-blas-level1.h           \
+#        test-blas-level2.h           \
+#        test-blas-level3.h           \
+#        test-common.C
 
 test_modular_double_SOURCES =                \
         test-modular-double.C                \

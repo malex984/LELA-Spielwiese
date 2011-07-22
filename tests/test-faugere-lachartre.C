@@ -16,7 +16,7 @@
 #include "test-common.h"
 
 #include "lela/util/commentator.h"
-#include "lela/ring/modular.h"
+#include "lela/ring/mymodular.h"
 #include "lela/ring/gf2.h"
 #include "lela/randiter/mersenne-twister.h"
 #include "lela/algorithms/faugere-lachartre.h"
@@ -231,9 +231,11 @@ int main (int argc, char **argv)
 	commentator.getMessageClass (TIMING_MEASURE).setMaxDetailLevel (Commentator::LEVEL_NORMAL);
 	commentator.getMessageClass (PROGRESS_REPORT).setMaxDepth (3);
 
+//  commentator.setReportStream(cout);
+
 	commentator.start ("Faugère-Lachartre test suite", "FaugereLachartre");
 
-	Modular<float> R (101);
+	MyModular<float> R (101);
 
 	pass = testFaugereLachartre (R, "GF(5)", m, n);
 

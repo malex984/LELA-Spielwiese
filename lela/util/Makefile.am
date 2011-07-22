@@ -5,15 +5,13 @@
 INCLUDES=-I$(top_srcdir) -I$(top_builddir) $(GMP_CFLAGS)
 AM_CXXFLAGS=-Wall -O2
 
-AM_CPPFLAGS= $(GMP_CFLAGS)
-LDADD = $(GMP_LIBS)
+AM_CPPFLAGS= $(LIBPOLYS_CFLAGS) $(GMP_CFLAGS)
+LDADD = $(LIBPOLYS_LIBS) $(GMP_LIBS)
 
 pkgincludesubdir=$(pkgincludedir)/util
 
 noinst_LTLIBRARIES=libutil.la
 
-AM_CPPFLAGS= $(LIBPOLYS_CFLAGS)
-LDADD = $(LIBPOLYS_LIBS)
 
 libutil_la_SOURCES=	\
 	timer.C		\

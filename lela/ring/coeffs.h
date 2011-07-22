@@ -150,6 +150,11 @@ class CoeffDomain
     { 
       return init(x, (int)(y));
     }
+    
+    Element &init (Element &x, const unsigned long &y) const
+    { 
+      return init(x, (int)(y));
+    }
 
     Element &init (Element &x, const LELA::integer &y) const
     {
@@ -831,7 +836,7 @@ struct ReferenceCountedElement
   Coeffs  m_coeffs;  ///< Element's Coeff. Domain
 }; // Use omalloc for allocating/deallocating...?
 
-inline void intrusive_ptr_add_ref(ReferenceCountedElement* p)
+static inline void intrusive_ptr_add_ref(ReferenceCountedElement* p)
 {
   assert( p!= NULL );
   assert( p->m_counter > 0 );
@@ -839,7 +844,7 @@ inline void intrusive_ptr_add_ref(ReferenceCountedElement* p)
   ++(p->m_counter); 
 }
 
-inline void intrusive_ptr_release(ReferenceCountedElement* p)
+static inline void intrusive_ptr_release(ReferenceCountedElement* p)
 {
   assert( p!= NULL );
   assert( p->m_counter > 0 );
