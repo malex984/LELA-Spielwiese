@@ -98,7 +98,7 @@ bool testColIterator (const Field &F, const Matrix &M)
 			break;
 		}
 
-		for (i = 0; i < M.coldim (); ++i)
+		for (i = 0; i < M.rowdim (); ++i)
 		{
 			typename Field::Element a;
 			if (M.getEntry (a, i, j))
