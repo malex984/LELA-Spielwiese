@@ -47,6 +47,7 @@ struct ReferenceCountedElement
   {
     assert( p!= NULL );
     assert( p->m_counter > 0 );
+    assume( n_Test(p->m_element, p->m_coeffs) );
 
     ++(p->m_counter); 
   }
@@ -55,6 +56,7 @@ struct ReferenceCountedElement
   {
     assert( p!= NULL );
     assert( p->m_counter > 0 );
+    assume( n_Test(p->m_element, p->m_coeffs) );
 
     if( --(p->m_counter) == 0 )
     {
@@ -80,6 +82,8 @@ class Number
 
     Number( Element c, Coeffs R, bool add_ref = true )
     {
+      assume( n_Test(c, R) );
+      
       px = new ReferenceCountedElement(c, R); /// TODO: Use Omalloc to create it!
 
       if( px != 0 && add_ref ) ReferenceCountedElement::intrusive_ptr_add_ref( px );
@@ -113,19 +117,22 @@ class Number
 
     Element get() const
     {
-      assert( px != 0 );      
+      assert( px != 0 );
+      assume( n_Test(px->m_element, px->m_coeffs) );
       return px->m_element;
     }
 
     Element const & operator*() const
     {
       assert( px != 0 );
+      assume( n_Test(px->m_element, px->m_coeffs) );
       return px->m_element;
     }
 
     Element & operator*()
     {
       assert( px != 0 );
+      assume( n_Test(px->m_element, px->m_coeffs) );
       return px->m_element;
     }
 
