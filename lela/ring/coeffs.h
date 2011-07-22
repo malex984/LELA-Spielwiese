@@ -12,9 +12,10 @@
 #define __SINGULAR_ring_coeff_H
 
 #include <lela/lela-config.h>
-#include <lela/ring/interface.h>
 
 #ifdef __LELA_HAVE_LIBPOLYS
+
+#include <lela/ring/interface.h>
 
 #include <omalloc/omalloc.h>
 #include <misc/auxiliary.h>
@@ -24,6 +25,8 @@
 
 #include <reporter/reporter.h>
 #include <resources/feResource.h>
+
+#include <cassert>
 
 /** Singular coefficient domain
  *
@@ -800,6 +803,7 @@ class CoeffDomain
     }
 
   private:
+    
     coeffs _coeffs;
     bool _clean_coeffs;
 
@@ -816,11 +820,15 @@ class CoeffDomain
 
 struct ReferenceCountedElement
 {
+  typedef number Element;
+  typedef coeffs Coeffs;
+
   ReferenceCountedElement(): m_counter(0), m_element(0), m_coeffs(NULL) {}
+  ReferenceCountedElement(Element c, Coeffs R): m_counter(0), m_element(c), m_coeffs(R) {}  
       
-  long   m_counter; ///< Reference Counter
-  number m_element; ///< Referenced Element
-  coeffs m_coeffs;  ///< Element's Coeff. Domain
+  long    m_counter; ///< Reference Counter
+  Element m_element; ///< Referenced Element
+  Coeffs  m_coeffs;  ///< Element's Coeff. Domain
 }; // Use omalloc for allocating/deallocating...?
 
 inline void intrusive_ptr_add_ref(ReferenceCountedElement* p)
@@ -850,14 +858,16 @@ inline void intrusive_ptr_release(ReferenceCountedElement* p)
 class Number
 {
   public:
-    typedef ReferenceCountedElement ElementValue;
-    
-    typedef ElementValue* ElementPointer;
+    typedef typename ReferenceCountedElement::Element Element;
+    typedef typename ReferenceCountedElement::Coeffs   Coeffs;
+    typedef Element* ElementPointer;
     
     Number () : px (NULL) {}
 
-    Number( ElementPointer p, bool add_ref = true ): px( p )
+    Number( Element c, Coeffs R, bool add_ref = true )
     {
+      px = new ReferenceCountedElement(c, R); // use omalloc
+      
       if( px != 0 && add_ref ) intrusive_ptr_add_ref( px );
     }
     
@@ -871,15 +881,7 @@ class Number
       if( px != 0 ) intrusive_ptr_release( px );
     }
 
-
-
     Number & operator=(Number const & rhs)
-    {
-      Number(rhs).swap(*this);
-      return *this;
-    }
-
-    Number & operator=(ElementPointer rhs)
     {
       Number(rhs).swap(*this);
       return *this;
@@ -890,27 +892,29 @@ class Number
       Number().swap( *this );
     }
 
-    void reset( ElementPointer rhs )
+    void reset( Element c, Coeffs R )
     {
-      Number( rhs ).swap( *this );
+      Number( c, R ).swap( *this );
     }
 
-    ElementPointer get() const
+    Element get() const // ???
     {
-      return px;
+      assert( px != 0 );      
+      return px->m_element;
     }
 
-    ElementValue & operator*() const
+    Element const & operator*() const
     {
       assert( px != 0 );
-      return *px;
+      return px->m_element;
     }
 
-    ElementPointer operator->() const
+    Element & operator*()
     {
       assert( px != 0 );
-      return px;
+      return px->m_element;
     }
+    
 
     operator bool () const
     {
@@ -925,14 +929,30 @@ class Number
     
     void swap(Number & rhs)
     {
-      ElementPointer tmp = px;
+      ReferenceCountedElement* tmp = px;
       px = rhs.px;
       rhs.px = tmp;
     }
 
   private:
-    ElementPointer px; ///< contained pointer, with counter
+    ReferenceCountedElement* px; ///< contained pointer, with counter
 };
+
+
+inline bool operator==(Number const & a, Number const & b)
+{
+  return a.get() == b.get();
+}
+
+inline bool operator!=(Number const & a, Number const & b)
+{
+  return a.get() != b.get();
+}
+
+void swap(Number & lhs, Number & rhs)
+{
+  lhs.swap(rhs);
+}
 
 
 
