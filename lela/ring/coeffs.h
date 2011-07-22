@@ -28,6 +28,136 @@
 
 #include <cassert>
 
+
+
+struct ReferenceCountedElement
+{
+  typedef number Element;
+  typedef coeffs Coeffs;
+
+  ReferenceCountedElement(): m_counter(0), m_element(0), m_coeffs(NULL) {}
+  ReferenceCountedElement(Element c, Coeffs R): m_counter(0), m_element(c), m_coeffs(R) {}  
+
+  long    m_counter; ///< Reference Counter
+  Element m_element; ///< Referenced Element
+  Coeffs  m_coeffs;  ///< Element's Coeff. Domain, needed for delete
+
+
+  static inline void intrusive_ptr_add_ref(ReferenceCountedElement* p)
+  {
+    assert( p!= NULL );
+    assert( p->m_counter > 0 );
+
+    ++(p->m_counter); 
+  }
+
+  static inline void intrusive_ptr_release(ReferenceCountedElement* p)
+  {
+    assert( p!= NULL );
+    assert( p->m_counter > 0 );
+
+    if( --(p->m_counter) == 0 )
+    {
+      n_Delete(& (p->m_element), p->m_coeffs); // Remove number,
+      delete p; /// TODO: Use Omalloc to delete *m_pointer
+    }
+  }
+
+}; // Use omalloc for allocating/deallocating...?
+
+
+/// @class Number simple smart pointer guarding numbers.
+///
+/// Its purpose is to count references (in assigns etc.)
+/// and destroy the underlying number when it's not needed anymore!
+class Number
+{
+  public:
+    typedef typename ReferenceCountedElement::Element Element;
+    typedef typename ReferenceCountedElement::Coeffs   Coeffs;
+
+    Number () : px (NULL) {}
+
+    Number( Element c, Coeffs R, bool add_ref = true )
+    {
+      px = new ReferenceCountedElement(c, R); /// TODO: Use Omalloc to create it!
+
+      if( px != 0 && add_ref ) ReferenceCountedElement::intrusive_ptr_add_ref( px );
+    }
+
+    Number(Number const & rhs): px( rhs.px )
+    {
+      if( px != 0 ) ReferenceCountedElement::intrusive_ptr_add_ref( px );
+    }
+
+    ~Number()
+    {
+      if( px != 0 ) ReferenceCountedElement::intrusive_ptr_release( px );
+    }
+
+    Number & operator=(Number const & rhs)
+    {
+      Number(rhs).swap(*this);
+      return *this;
+    }
+
+    void reset()
+    {
+      Number().swap( *this );
+    }
+
+    void reset( Element c, Coeffs R )
+    {
+      Number( c, R ).swap( *this );
+    }
+
+    Element get() const
+    {
+      assert( px != 0 );      
+      return px->m_element;
+    }
+
+    Element const & operator*() const
+    {
+      assert( px != 0 );
+      return px->m_element;
+    }
+
+    Element & operator*()
+    {
+      assert( px != 0 );
+      return px->m_element;
+    }
+
+
+    operator bool () const
+    {
+      return px != 0;
+    }
+
+    // operator! is redundant, but some compilers need it
+    bool operator! () const // never throws
+    {
+      return px == 0;
+    }
+
+    void swap(Number & rhs)
+    {
+      ReferenceCountedElement* tmp = px;
+      px = rhs.px;
+      rhs.px = tmp;
+    }
+
+  private:
+    ReferenceCountedElement* px; ///< contained pointer, with counter
+};
+
+void swap(Number & lhs, Number & rhs)
+{
+  lhs.swap(rhs);
+}
+
+
 /** Singular coefficient domain
  *
  * This class defines the ring-interface for general Singular coefficients.
@@ -822,143 +952,6 @@ class CoeffDomain
 
     
 }; // class CoeffDomain
-
-struct ReferenceCountedElement
-{
-  typedef number Element;
-  typedef coeffs Coeffs;
-
-  ReferenceCountedElement(): m_counter(0), m_element(0), m_coeffs(NULL) {}
-  ReferenceCountedElement(Element c, Coeffs R): m_counter(0), m_element(c), m_coeffs(R) {}  
-      
-  long    m_counter; ///< Reference Counter
-  Element m_element; ///< Referenced Element
-  Coeffs  m_coeffs;  ///< Element's Coeff. Domain
-}; // Use omalloc for allocating/deallocating...?
-
-static inline void intrusive_ptr_add_ref(ReferenceCountedElement* p)
-{
-  assert( p!= NULL );
-  assert( p->m_counter > 0 );
-  
-  ++(p->m_counter); 
-}
-
-static inline void intrusive_ptr_release(ReferenceCountedElement* p)
-{
-  assert( p!= NULL );
-  assert( p->m_counter > 0 );
-  
-  if( --(p->m_counter) == 0 )
-  {
-    n_Delete(& (p->m_element), p->m_coeffs); // Remove number,
-    delete p;
-    /// Use Omalloc to delete *m_pointer
-  }
-}
-
-/// @class Number is an 'intrusive_ptr' for ReferenceCountedElement
-///
-///
-class Number
-{
-  public:
-    typedef typename ReferenceCountedElement::Element Element;
-    typedef typename ReferenceCountedElement::Coeffs   Coeffs;
-    typedef Element* ElementPointer;
-    
-    Number () : px (NULL) {}
-
-    Number( Element c, Coeffs R, bool add_ref = true )
-    {
-      px = new ReferenceCountedElement(c, R); // use omalloc
-      
-      if( px != 0 && add_ref ) intrusive_ptr_add_ref( px );
-    }
-    
-    Number(Number const & rhs): px( rhs.px )
-    {
-      if( px != 0 ) intrusive_ptr_add_ref( px );
-    }
-
-    ~Number()
-    {
-      if( px != 0 ) intrusive_ptr_release( px );
-    }
-
-    Number & operator=(Number const & rhs)
-    {
-      Number(rhs).swap(*this);
-      return *this;
-    }
-
-    void reset()
-    {
-      Number().swap( *this );
-    }
-
-    void reset( Element c, Coeffs R )
-    {
-      Number( c, R ).swap( *this );
-    }
-
-    Element get() const // ???
-    {
-      assert( px != 0 );      
-      return px->m_element;
-    }
-
-    Element const & operator*() const
-    {
-      assert( px != 0 );
-      return px->m_element;
-    }
-
-    Element & operator*()
-    {
-      assert( px != 0 );
-      return px->m_element;
-    }
-    
-
-    operator bool () const
-    {
-      return px != 0;
-    }
-
-    // operator! is redundant, but some compilers need it
-    bool operator! () const // never throws
-    {
-      return px == 0;
-    }
-    
-    void swap(Number & rhs)
-    {
-      ReferenceCountedElement* tmp = px;
-      px = rhs.px;
-      rhs.px = tmp;
-    }
-
-  private:
-    ReferenceCountedElement* px; ///< contained pointer, with counter
-};
-
-
-inline bool operator==(Number const & a, Number const & b)
-{
-  return a.get() == b.get();
-}
-
-inline bool operator!=(Number const & a, Number const & b)
-{
-  return a.get() != b.get();
-}
-
-void swap(Number & lhs, Number & rhs)
-{
-  lhs.swap(rhs);
-}
-
 
 
 #ifndef HAVE_initializeGMP
