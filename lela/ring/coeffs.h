@@ -749,77 +749,62 @@ class CoeffDomain
       return _minus_one;      
     }
 
-    /** @name Reference-counting of elements
+      //@}
+      //@} Common Object Interface
+
+    /** \brief Conversion of ring element to an integer.  The
+     * meaning of conversion is specific to each ring
+     * class. However, if x is in the image of the integers in the
+     * ring, the integer n returned is such that an init from n
+     * will reproduce x. Most often 0 &leq; n &lt; characteristic.
      *
-     * These functions need not be implemented, but are useful for
-     * memory-management with elements.
+     * @return reference to n.
+     * @param n output integer.
+     * @param x input ring element.
      */
-    //@{
+    int &convert (int &n, const Element &y) const
+    {
+      assume( n_Test(y, _coeffs) );
+      Element t = n_Copy(y, _coeffs);
+      assume( n_Test(t, _coeffs) );
+      n = n_Int(t, _coeffs);
+      assume( n_Test(t, _coeffs) );
+      n_Delete(&t, _coeffs);      
+      return n;
+    }
 
-    virtual void ref (Element &x) const {}
-    virtual void unref (Element &x) const {}
-    
-    //@}
+    LELA::integer &convert (LELA::integer &x, const Element &y) const 
+    {
+      int n; convert (n, y); return x = LELA::integer(n);      
+    }
 
-      /** \brief Conversion of ring element to an integer.  The
-       * meaning of conversion is specific to each ring
-       * class. However, if x is in the image of the integers in the
-       * ring, the integer n returned is such that an init from n
-       * will reproduce x. Most often 0 &leq; n &lt; characteristic.
-       *
-       * @return reference to n.
-       * @param n output integer.
-       * @param x input ring element.
-       */
-      int &convert (int &n, const Element &y) const
-      {
-        assume( n_Test(y, _coeffs) );
-        Element t = n_Copy(y, _coeffs);
-        assume( n_Test(t, _coeffs) );
-        n = n_Int(t, _coeffs);
-        assume( n_Test(t, _coeffs) );
-        n_Delete(&t, _coeffs);      
-        return n;
-      }
+    double &convert (double &x, const Element &y) const
+    {
+      int n; convert (n, y); return  x = (double) n;
+    }
 
-      LELA::integer &convert (LELA::integer &x, const Element &y) const 
-      {
-        int n; convert (n, y); return x = LELA::integer(n);      
-      }
+    float &convert (float &x, const Element &y) const
+    {
+      int n; convert (n, y); return  x = (float) n;
+    }
 
-      double &convert (double &x, const Element &y) const
-      {
-        int n; convert (n, y); return  x = (double) n;
-      }
+    inline void cleanup(Element& v) const
+    {
+      assume( n_Test(v, _coeffs) );
+      n_Delete(&v, _coeffs);
+    }
 
-      float &convert (float &x, const Element &y) const
-      {
-        int n; convert (n, y); return  x = (float) n;
-      }
-
-    //@}
-    //@} Common Object Interface
-
-      void cleanup(Element& v) const
-      {
-        assume( n_Test(v, _coeffs) );
-        n_Delete(&v, _coeffs);
-      }
-
-
-      bool test(Element& v) const
-      {
-        return n_Test(v, _coeffs);
-      }
-    
-
+    inline bool test(Element& v) const
+    {
+      return n_Test(v, _coeffs);
+    }
 
   private:
     coeffs _coeffs;
     bool _clean_coeffs;
 
-    n_coeffType _type;
-    void* _param;
+    n_coeffType _type; ///< needed for the copy constructor CoeffDomain(CoeffDomain&)
+    void* _param;      ///< what about using reference counting of coeffs (themselves)
     
     Element _one; // = n_Init(1, _coeffs);
     Element _zero; // = n_Init(0, _coeffs); // When do we clean these???
@@ -827,8 +812,127 @@ class CoeffDomain
 
 
     
-}; // class RingInterface
+}; // class CoeffDomain
 
+struct ReferenceCountedElement
+{
+  ReferenceCountedElement(): m_counter(0), m_element(0), m_coeffs(NULL) {}
+      
+  long   m_counter; ///< Reference Counter
+  number m_element; ///< Referenced Element
+  coeffs m_coeffs;  ///< Element's Coeff. Domain
+}; // Use omalloc for allocating/deallocating...?
+
+inline void intrusive_ptr_add_ref(ReferenceCountedElement* p)
+{
+  assert( p!= NULL );
+  assert( p->m_counter > 0 );
+  
+  ++(p->m_counter); 
+}
+
+inline void intrusive_ptr_release(ReferenceCountedElement* p)
+{
+  assert( p!= NULL );
+  assert( p->m_counter > 0 );
+  
+  if( --(p->m_counter) == 0 )
+  {
+    n_Delete(& (p->m_element), p->m_coeffs); // Remove number,
+    delete p;
+    /// Use Omalloc to delete *m_pointer
+  }
+}
+
+/// @class Number is an 'intrusive_ptr' for ReferenceCountedElement
+///
+///
+class Number
+{
+  public:
+    typedef ReferenceCountedElement ElementValue;
+    
+    typedef ElementValue* ElementPointer;
+    
+    Number () : px (NULL) {}
+
+    Number( ElementPointer p, bool add_ref = true ): px( p )
+    {
+      if( px != 0 && add_ref ) intrusive_ptr_add_ref( px );
+    }
+    
+    Number(Number const & rhs): px( rhs.px )
+    {
+      if( px != 0 ) intrusive_ptr_add_ref( px );
+    }
+
+    ~Number()
+    {
+      if( px != 0 ) intrusive_ptr_release( px );
+    }
+
+
+
+    Number & operator=(Number const & rhs)
+    {
+      Number(rhs).swap(*this);
+      return *this;
+    }
+
+    Number & operator=(ElementPointer rhs)
+    {
+      Number(rhs).swap(*this);
+      return *this;
+    }
+
+    void reset()
+    {
+      Number().swap( *this );
+    }
+
+    void reset( ElementPointer rhs )
+    {
+      Number( rhs ).swap( *this );
+    }
+
+    ElementPointer get() const
+    {
+      return px;
+    }
+
+    ElementValue & operator*() const
+    {
+      assert( px != 0 );
+      return *px;
+    }
+
+    ElementPointer operator->() const
+    {
+      assert( px != 0 );
+      return px;
+    }
+
+    operator bool () const
+    {
+      return px != 0;
+    }
+
+    // operator! is redundant, but some compilers need it
+    bool operator! () const // never throws
+    {
+      return px == 0;
+    }
+    
+    void swap(Number & rhs)
+    {
+      ElementPointer tmp = px;
+      px = rhs.px;
+      rhs.px = tmp;
+    }
+
+  private:
+    ElementPointer px; ///< contained pointer, with counter
+};
 
 
 
