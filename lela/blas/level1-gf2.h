@@ -50,8 +50,21 @@ class _dot<GF2, GenericModule<GF2>::Tag>
 
 	template <class Modules, class reference, class Vector1, class Vector2>
 	static reference &dot_impl (const GF2 &F, Modules &M, reference &res, const Vector1 &x, const Vector2 &y,
+				    VectorRepresentationTypes::Sparse01, VectorRepresentationTypes::Hybrid01)
+		{ return op (F, M, res, y, x); }
+
+	template <class Modules, class reference, class Vector1, class Vector2>
+	static reference &dot_impl (const GF2 &F, Modules &M, reference &res, const Vector1 &x, const Vector2 &y,
+				    VectorRepresentationTypes::Hybrid01, VectorRepresentationTypes::Sparse01);
+
+	template <class Modules, class reference, class Vector1, class Vector2>
+	static reference &dot_impl (const GF2 &F, Modules &M, reference &res, const Vector1 &x, const Vector2 &y,
 				    VectorRepresentationTypes::Hybrid01, VectorRepresentationTypes::Dense01)
 		{ return op (F, M, res, y, x); }
+
+	template <class Modules, class reference, class Vector1, class Vector2>
+	static reference &dot_impl (const GF2 &F, Modules &M, reference &res, const Vector1 &x, const Vector2 &y,
+				    VectorRepresentationTypes::Hybrid01, VectorRepresentationTypes::Hybrid01);
 
 public:
 	template <class Modules, class reference, class Vector1, class Vector2>
@@ -116,11 +129,11 @@ class _axpy<GF2, GenericModule<GF2>::Tag>
 {
 	template <class Modules, class Vector1, class Vector2>
 	static Vector2 &axpy_impl (const GF2 &F, Modules &M, bool a, const Vector1 &x, Vector2 &y,
-				   VectorRepresentationTypes::Dense01, VectorRepresentationTypes::Dense01);
+				   VectorRepresentationTypes::Dense01, VectorRepresentationTypes::Generic);
 
 	template <class Modules, class Vector1, class Vector2>
 	static Vector2 &axpy_impl (const GF2 &F, Modules &M, bool a, const Vector1 &x, Vector2 &y,
-				   VectorRepresentationTypes::Sparse01, VectorRepresentationTypes::Sparse01);
+				   VectorRepresentationTypes::Dense01, VectorRepresentationTypes::Dense01);
 
 	template <class Modules, class Vector1, class Vector2>
 	static Vector2 &axpy_impl (const GF2 &F, Modules &M, bool a, const Vector1 &x, Vector2 &y,
@@ -128,7 +141,19 @@ class _axpy<GF2, GenericModule<GF2>::Tag>
 
 	template <class Modules, class Vector1, class Vector2>
 	static Vector2 &axpy_impl (const GF2 &F, Modules &M, bool a, const Vector1 &x, Vector2 &y,
+				   VectorRepresentationTypes::Sparse01, VectorRepresentationTypes::Sparse01);
+
+	template <class Modules, class Vector1, class Vector2>
+	static Vector2 &axpy_impl (const GF2 &F, Modules &M, bool a, const Vector1 &x, Vector2 &y,
+				   VectorRepresentationTypes::Sparse01, VectorRepresentationTypes::Hybrid01);
+
+	template <class Modules, class Vector1, class Vector2>
+	static Vector2 &axpy_impl (const GF2 &F, Modules &M, bool a, const Vector1 &x, Vector2 &y,
 				   VectorRepresentationTypes::Hybrid01, VectorRepresentationTypes::Dense01);
+
+	template <class Modules, class Vector1, class Vector2>
+	static Vector2 &axpy_impl (const GF2 &F, Modules &M, bool a, const Vector1 &x, Vector2 &y,
+				   VectorRepresentationTypes::Hybrid01, VectorRepresentationTypes::Sparse01);
 
 	template <class Modules, class Vector1, class Vector2>
 	static Vector2 &axpy_impl (const GF2 &F, Modules &M, bool a, const Vector1 &x, Vector2 &y,
