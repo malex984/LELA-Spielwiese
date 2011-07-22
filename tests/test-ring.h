@@ -118,41 +118,106 @@ bool testRing (Ring &F, const char *title, bool ringp = true)
 	commentator.stop (MSG_STATUS (part_pass));
 	commentator.progress ();
 
-#if 0 // This test makes no sense any more, since convert has been removed
-	commentator.start ("Testing init/convert");
+	commentator.start ("Testing init");
 	part_pass = true;
 
-	if (F.cardinality (m) <= 0)
-		n = 49193295;   // Just using some odd value
-	else
-		n -= 1;
-	
-	int i = n.get_ui();
-	
-	report << "Initial integer: " << i << endl;	
-	F.init (a, i);
-	F.write (report << "Result of init: ", a) << endl;
+	int pos_cases[] = { 1, 10, 20, 97 };
+	int neg_cases[] = { -1, -10, -20, -97 };
 
-	int j;
+	// Test zero
+	F.init (a, 0);
 
-	F.convert (j, a);
-	report << "Result of convert: " << j << endl;
+	report << "Result of F.init (a, 0): ";
+	F.write (report, a);
 
-	if (i != j)  // BUG???
-		part_pass = reportError ("F.convert (j, F.init (a, i)) != i", pass);
-
+	if (!F.isZero (a))
+		part_pass = reportError ("Ring reports F.init (a, 0) != 0", pass);
+   
+   
+#if 0   
+        if(1)
+        {
+	   if (F.cardinality (m) <= 0)
+	     n = 49193295;   // Just using some odd value
+	   else
+	     n -= 1;
+	   
+	   int i = n.get_ui();
 	
-	F.write (report << "Result of F.init(F.convert(a)): ", F.init (b, j) ) << endl;
-	
-	if (!F.areEqual(a, b))  // ???
-		part_pass = reportError ("F.init(F.convert (a)) != a...", pass);
+	   report << "Initial integer: " << i << endl;	
+	   F.init (a, i);
+	   F.write (report << "Result of init: ", a) << endl;
 
-//	assume( F.areEqual(a, b) );
+	   int j;
+
+	   F.convert (j, a);
+	   report << "Result of convert: " << j << endl;
+
+	   unsigned int ch;
+	   F.characteristic(ch);
+   
+	   if( ch > 0 )
+	     {
+		if ((i - j) % ch != 0)
+		  part_pass = reportError ("F.convert (j, F.init (a, i)) != i", pass);
+	     }
+	   else
+	     if ((i - j) != 0)
+	       part_pass = reportError ("F.convert (j, F.init (a, i)) != i", pass);
+
+	   F.write (report << "Result of F.init(F.convert(a)): ", F.init (b, j) ) << endl;
 	
+	   if (!F.areEqual(a, b))  // !!
+	     part_pass = reportError ("F.init(F.convert (a)) != a...", pass);
+
+	   //   assume( F.areEqual(a, b) );
+	}
+#endif   
+    
+
+
+        size_t j;
+        int v;
+	
+        for (j = 0; j < sizeof (pos_cases) / sizeof (int); ++j) {
+	   F.init (a, pos_cases[j]);
+		F.copy (b, F.zero ());
+
+		for (v = 0; v < pos_cases[j]; ++v)
+			F.addin (b, F.one ());
+
+		if (!F.areEqual (a, b)) {
+			std::ostream &error = commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR);
+			error << "Ring reports F.init (a, " << pos_cases[j] << ") != 1 + ... + 1 (" << pos_cases[j] << " summands)" << std::endl
+			      << "Reported value of a = ";
+			F.write (error, a) << std::endl
+					   << "Reported value of sum = ";
+			F.write (error, b) << std::endl;
+			part_pass = false;
+		}
+	}
+	
+     
+     for (j = 0; j < sizeof (neg_cases) / sizeof (int); ++j) {
+		F.init (a, neg_cases[j]);
+		F.copy (b, F.zero ());
+
+		for (v = 0; v < -neg_cases[j]; ++v)
+			F.addin (b, F.minusOne ());
+
+		if (!F.areEqual (a, b)) {
+			std::ostream &error = commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR);
+			error << "Ring reports F.init (a, " << neg_cases[j] << ") != -1 + ... + -1 (" << neg_cases[j] << " summands)" << std::endl
+			      << "Reported value of a = ";
+			F.write (error, a) << std::endl
+					   << "Reported value of sum = ";
+			F.write (error, b) << std::endl;
+			part_pass = false;
+		}
+	}
 
 	commentator.stop (MSG_STATUS (part_pass));
 	commentator.progress ();
-#endif // Test disabled
 
 	commentator.start ("Testing ring arithmetic");
 	part_pass = true;

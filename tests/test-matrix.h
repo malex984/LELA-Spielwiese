@@ -127,8 +127,7 @@ bool testColIterator (const Field &F, const Matrix &M)
 						}
 					}
 				} else
-					assume( F.test(a) ); // can fail....!?
-				
+					assert( F.test(a) ); // can fail....!?
 					
 			} else {
 				typename Field::Element b;
@@ -140,7 +139,7 @@ bool testColIterator (const Field &F, const Matrix &M)
 					F.write (error, b) << std::endl;
 					pass = false;
 				}
-				assume( F.test(b) );
+				assert( F.test(b) );
 			}
 		}
 	}
