@@ -28,6 +28,7 @@
 #include "lela/blas/level3.h"
 #include "lela/vector/stream.h"
 #include "lela/matrix/dense.h"
+#include "lela/matrix/sparse.h"
 
 using namespace std;
 using namespace LELA;
@@ -157,8 +158,9 @@ static bool testScalAxpyIsZero (Context<Field, Modules> &ctx, const char *text, 
 	DenseMatrix<typename Field::Element> M1 (M.rowdim (), M.coldim ());
 
 	ostream &report = commentator.report (Commentator::LEVEL_NORMAL, INTERNAL_DESCRIPTION);
+	ostream &reportUI = commentator.report (Commentator::LEVEL_UNIMPORTANT, INTERNAL_DESCRIPTION);
 	report << "Input matrix M:" << endl;
-	BLAS3::write (ctx, report, M);
+	BLAS3::write (ctx, reportUI, M);
 
 	r.random (a);
 	ctx.F.neg (nega, a);
@@ -170,12 +172,12 @@ static bool testScalAxpyIsZero (Context<Field, Modules> &ctx, const char *text, 
 	BLAS3::scal (ctx, a, M1);
 
 	report << "Output matrix a * M:" << endl;
-	BLAS3::write (ctx, report, M1);
+	BLAS3::write (ctx, reportUI, M1);
 
 	BLAS3::axpy (ctx, nega, M, M1);
 
 	report << "Output matrix -a * M + a * M:" << endl;
-	BLAS3::write (ctx, report, M1);
+	BLAS3::write (ctx, reportUI, M1);
 
 	if (!BLAS3::is_zero (ctx, M1)) {
 		commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR)
@@ -974,6 +976,121 @@ bool testPermutation (Context<Field, Modules> &ctx, const char *text, const Matr
 	return ret;
 }
 
+template <class Ring, class Modules, class Matrix>
+bool testpermute_rows (LELA::Context<Ring, Modules> &ctx,
+		       const char *text,
+		       const Matrix &A1)
+{
+
+        ostringstream str;
+        str << "Testing " << text << " permute_rows (does it do anything?)" << std::ends;
+        commentator.start (str.str ().c_str ());
+
+	std::ostream &report = commentator.report (Commentator::LEVEL_NORMAL, INTERNAL_DESCRIPTION);
+
+        bool pass = true;
+
+	if (BLAS3::is_zero (ctx, A1)) {
+		commentator.report (Commentator::LEVEL_NORMAL, INTERNAL_WARNING)
+			<< "Input-matrix is 0. Skipping test." << std::endl;
+		commentator.stop ("skipped");
+		return true;
+	}
+
+	typename Matrix::ContainerType A2 (A1.rowdim (), A1.coldim ());
+
+	BLAS3::copy(ctx, A1, A2);
+
+	MersenneTwister MT;
+
+	Permutation P;
+
+	// Create a random row permutation
+	for (unsigned int i = 0; i < A1.rowdim (); ++i) {
+		unsigned int row1, row2;
+
+		do {
+			row1 = MT.randomInt () % A1.rowdim ();
+			row2 = MT.randomInt () % A1.rowdim ();
+		} while (row1 == row2);
+
+		P.push_back (Permutation::value_type (row1, row2));
+	}
+
+        report << "Matrix A_1: "<< std::endl;
+	BLAS3::write (ctx, report, A1);
+
+	BLAS3::permute_rows (ctx, P.begin (), P.end (), A2);
+
+	report << "Matrix A_1 P: " << std::endl;
+	BLAS3::write(ctx, report, A2);
+
+        if (BLAS3::equal (ctx, A1, A2))
+		{
+			commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR)
+				<< "ERROR: A_1 =  A_1 P " << std::endl;
+			pass = false;
+		}
+
+        commentator.stop (MSG_STATUS (pass));
+
+        return pass;
+}
+
+template <class Ring, class Modules, class Matrix>
+bool testpermute_cols (LELA::Context<Ring, Modules> &ctx,
+                       const char *text,
+                       const Matrix &A1)
+{
+
+        ostringstream str;
+        str << "Testing " << text << " permute_cols (does it do anything?)" << std::ends;
+        commentator.start (str.str ().c_str ());
+
+	std::ostream &report = commentator.report (Commentator::LEVEL_NORMAL, INTERNAL_DESCRIPTION);
+
+        bool pass = true;
+
+        typename Matrix::ContainerType A2 (A1.rowdim (), A1.coldim ());
+
+	BLAS3::copy(ctx, A1, A2);
+
+        MersenneTwister MT;
+
+        Permutation P;
+
+        // Create a random row permutation
+        for (unsigned int i = 0; i < A1.coldim (); ++i) {
+                unsigned int col1,col2;
+
+                do {
+                        col1 = MT.randomInt () % A1.coldim ();
+                        col2 = MT.randomInt () % A1.coldim ();
+                } while (col1 == col2);
+
+                P.push_back (Permutation::value_type (col1, col2));
+        }
+
+        report << "Matrix A_1: "<< std::endl;
+	BLAS3::write (ctx, report, A1);
+
+	BLAS3::permute_cols (ctx, P.begin (), P.end (), A2);
+
+        report << "Matrix A_1 P: " << std::endl;
+	BLAS3::write(ctx, report, A2);
+
+        if (BLAS3::equal (ctx, A1, A2))
+                {
+                        commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR)
+                                << "ERROR: A_1 =  A_1 P " << std::endl;
+                        pass = false;
+                }
+
+        commentator.stop (MSG_STATUS (pass));
+
+        return pass;
+}
+
 /* Test 15: read and write
  *
  * Return true on success and false on failure
@@ -1258,7 +1375,7 @@ bool testgemmConsistency  (LELA::Context<Ring, Modules1> &ctx1,
 	BLAS3::gemm (ctx1, a, A1, A2, b, A9);
 
         report << "Matrix a A_1 A_2 + c A_3: " << std::endl;
-	BLAS3::write (ctx1, report, A6);
+	BLAS3::write (ctx1, report, A9);
 
         report << "Matrix A_4: "<< std::endl;
 	BLAS3::write (ctx1, report, A7);
@@ -1569,6 +1686,8 @@ bool testBLAS3 (Context<Field, Modules> &ctx, const char *text,
 	if (!testTrsmCoeff (ctx, text, M4, M2)) pass = false;
 
 	if (!testPermutation (ctx, text, M1)) pass = false;
+	if (!testpermute_rows(ctx, text, M1)) pass = false;
+	if (!testpermute_cols(ctx, text, M1)) pass = false;
 	if (!testReadWrite (ctx, text, M1)) pass = false;
 
 	commentator.stop (MSG_STATUS (pass));
@@ -1602,6 +1721,8 @@ bool testBLAS3 (Context<Field, Modules> &ctx, const char *text,
 //	if (!testGemmRowEchelon (ctx, text, M1)) pass = false;  // Needs ColIterator
 
 	if (!testPermutation (ctx, text, M1)) pass = false;
+        if (!testpermute_rows(ctx, text, M1)) pass = false;
+        if (!testpermute_cols(ctx, text, M1)) pass = false;
 	if (!testReadWrite (ctx, text, M1)) pass = false;
 
 	commentator.stop (MSG_STATUS (pass));
@@ -1631,6 +1752,9 @@ bool testBLAS3 (Context<Field, Modules> &ctx, const char *text,
 	if (!testTrmmGemmLower (ctx, text, M4, M2)) pass = false;
 	if (!testTrsmLower (ctx, text, M4, M2)) pass = false;
 	if (!testTrsmUpper (ctx, text, M4, M2)) pass = false;
+
+        if (!testpermute_rows(ctx, text, M1)) pass = false;
+        if (!testpermute_cols(ctx, text, M1)) pass = false;
 
 	commentator.stop (MSG_STATUS (pass));
 
@@ -1664,8 +1788,142 @@ bool testBLAS3Submatrix (Context<Field, Modules> &ctx, const char *text, //
 	return pass;
 }
 
+template <class Ring, class Modules1, class Modules2>
+bool testBLAS3ModulesConsistency (LELA::Context<Ring, Modules1> &ctx1, LELA::Context<Ring, Modules2> &ctx2, const char *text, size_t m, size_t n, size_t p, size_t k) 
+{
+	std::ostringstream str;
+	str << "Testing BLAS3 consistency of modules over <" << text << ">" << std::ends;
+	LELA::commentator.start (str.str ().c_str ());
+
+	bool pass = true;
+        RandomDenseStream<Ring, typename DenseMatrix<typename Ring::Element>::Row> stream11 (ctx1.F, n, m);
+        DenseMatrix<typename Ring::Element> M1 (stream11);
+
+        RandomSparseStream<Ring, typename SparseMatrix<typename Ring::Element>::Row> stream21 (ctx1.F, (double) k / (double) n, n, m);
+        SparseMatrix<typename Ring::Element> M2 (stream21);
+
+        TransposeMatrix<SparseMatrix<typename Ring::Element> > M3 (M2);
+
+	pass = testscalConsistency (ctx1, ctx2, "dense", M1, M1) && pass;
+        pass = testscalConsistency (ctx1, ctx2, "sparse(row-wise)", M2, M2) && pass;
+        pass = testscalConsistency (ctx1, ctx2, "sparse(col-wise)", M3, M3) && pass;
+
+	pass = testaxpyConsistency (ctx1, ctx2, "dense /dense", M1, M1, M1, M1) && pass;
+        pass = testaxpyConsistency (ctx1, ctx2, "sparse(row-wise)/dense", M2, M1, M2, M1) &&pass;
+        pass = testaxpyConsistency (ctx1, ctx2, "sparse(row-wise)/sparse(row-wise)", M2, M2, M2, M2) &&pass;
+
+        RandomDenseStream<Ring, typename DenseMatrix<typename Ring::Element>::Row> stream12 (ctx1.F, n, m);
+        DenseMatrix<typename Ring::Element> A1_dense (stream12);
+
+        RandomSparseStream<Ring, typename SparseMatrix<typename Ring::Element>::Row> stream13 (ctx1.F, (double) k / (double) n, n, m);
+        SparseMatrix<typename Ring::Element> A1_sparse (stream13);
+
+        TransposeMatrix<SparseMatrix<typename Ring::Element> > A1_trans (A1_sparse);
+
+        RandomDenseStream<Ring, typename DenseMatrix<typename Ring::Element>::Row> stream14 (ctx1.F, p, n);
+        DenseMatrix<typename Ring::Element> A2_dense (stream14);
+
+        RandomSparseStream<Ring, typename SparseMatrix<typename Ring::Element>::Row> stream15 (ctx1.F, (double) k / (double) n, p, n);
+        SparseMatrix<typename Ring::Element> A2_sparse (stream15);
+
+        TransposeMatrix<SparseMatrix<typename Ring::Element> > A2_trans (A2_sparse);
+
+        RandomDenseStream<Ring, typename DenseMatrix<typename Ring::Element>::Row> stream16 (ctx1.F, p, m);
+        DenseMatrix<typename Ring::Element> A3_dense (stream16);
+
+        RandomSparseStream<Ring, typename SparseMatrix<typename Ring::Element>::Row> stream17 (ctx1.F, (double) k / (double) n, p, m);
+        SparseMatrix<typename Ring::Element> A3_sparse (stream17);
+
+        TransposeMatrix<SparseMatrix<typename Ring::Element> > A3_trans (A3_sparse);
+
+        RandomDenseStream<Ring, typename DenseMatrix<typename Ring::Element>::Row> stream18 (ctx1.F, m, p);
+        DenseMatrix<typename Ring::Element> A4_dense (stream18);
+
+        RandomSparseStream<Ring, typename SparseMatrix<typename Ring::Element>::Row> stream19 (ctx1.F, (double) k / (double) n, m, p);
+        SparseMatrix<typename Ring::Element> A4_sparse (stream19);
+
+        TransposeMatrix<SparseMatrix<typename Ring::Element> > A4_trans (A4_sparse);
+
+        pass = testgemmConsistency (ctx1, ctx2, "sparse(row-wise)/dense/dense", A1_sparse, A2_dense, A3_dense, A1_sparse, A2_dense, A3_dense) && pass;
+        pass = testgemmConsistency (ctx1, ctx2, "sparse(col-wise)/dense/dense", A1_trans, A3_dense, A2_dense, A1_trans, A3_dense, A2_dense)  && pass;
+        pass = testgemmConsistency (ctx1, ctx2, "sparse(row-wise)/sparse(row-wise)/dense", A1_sparse, A2_sparse, A3_dense, A1_sparse, A2_sparse, A3_dense) && pass;
+        pass = testgemmConsistency (ctx1, ctx2, "sparse(col-wise)/sparse(row-wise)/dense", A1_trans, A3_sparse, A2_dense, A1_trans, A3_sparse, A2_dense) && pass;
+        pass = testgemmConsistency (ctx1, ctx2, "sparse(row-wise)/sparse(col-wise)/dense", A3_sparse, A2_trans, A1_dense, A3_sparse, A2_trans, A1_dense) && pass;
+        pass = testgemmConsistency (ctx1, ctx2, "sparse(col-wise)/sparse(col-wise)/dense", A2_trans, A1_trans, A4_dense, A2_trans, A1_trans, A4_dense) && pass;
+
+        pass = testgemmConsistency (ctx1, ctx2, "sparse(row-wise)/dense/sparse(row-wise)", A1_sparse, A2_dense, A3_sparse, A1_sparse, A2_dense, A3_sparse) && pass;
+        pass = testgemmConsistency (ctx1, ctx2, "sparse(col-wise)/dense/sparse(row-wise)", A3_trans, A1_dense, A2_sparse, A3_trans, A1_dense, A2_sparse) && pass;
+        pass = testgemmConsistency (ctx1, ctx2, "sparse(row-wise)/sparse(row-wise)/sparse(row-wise)", A1_sparse, A2_sparse, A3_sparse, A1_sparse, A2_dense, A3_sparse) && pass;
+        pass = testgemmConsistency (ctx1, ctx2, "sparse(col-wise)/sparse(row-wise)/sparse(row-wise)", A1_trans, A3_sparse, A2_sparse, A1_trans, A2_sparse, A3_sparse) && pass;
+        pass = testgemmConsistency (ctx1, ctx2, "sparse(row-wise)/sparse(col-wise)/sparse(row-wise)", A3_sparse, A2_trans, A1_sparse, A3_sparse, A2_trans, A3_sparse) && pass;
+
+        RandomDenseStream<Ring, typename DenseMatrix<typename Ring::Element>::Row> stream41 (ctx1.F, n, n);
+        DenseMatrix<typename Ring::Element> M4 (stream41);
+
+        RandomSparseStream<Ring, typename SparseMatrix<typename Ring::Element>::Row> stream51 (ctx1.F, (double) k / (double) n, n, n);
+        SparseMatrix<typename Ring::Element> M5 (stream51);
+
+        TransposeMatrix<SparseMatrix<typename Ring::Element> > M6 (M5);
+
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(row-wise)/dense(LT, diag = 1)", M5, M4, M5, M4, LowerTriangular, true) && pass;
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(row-wise)/dense(UT, diag = 1)", M5, M4, M5, M4,  UpperTriangular, true) && pass;
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(row-wise)/dense(LT, diag != 1)", M5, M4, M5, M4, LowerTriangular, false) && pass;
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(row-wise)/dense(UT, diag != 1)", M5, M4, M5, M4, UpperTriangular, false) && pass;
+
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(col-wise)/dense(LT, diag = 1)", M6, M4, M6, M4, LowerTriangular, true) && pass;
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(col-wise)/dense(UT, diag = 1)", M6, M4, M6, M4,  UpperTriangular, true) && pass;
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(col-wise)/dense(LT, diag != 1)", M6, M4, M6, M4, LowerTriangular, false) && pass;
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(col-wise)/dense(UT, diag != 1)", M6, M4, M6, M4, UpperTriangular, false) && pass;
+
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(row-wise)/sparse(row-wise)(LT, diag = 1)", M5, M5, M5, M5, LowerTriangular, true) && pass;
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(row-wise)/sparse(row-wise)(UT, diag = 1)", M5, M5, M5, M5,  UpperTriangular, true) && pass;
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(row-wise)/sparse(row-wise)(LT, diag != 1)", M5, M5, M5, M5, LowerTriangular, false) && pass;
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(row-wise)/sparse(row-wise)(UT, diag != 1)", M5, M5, M5, M5, UpperTriangular, false) && pass;
+
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(col-wise)/sparse(row-wise)(LT, diag = 1)", M6, M5, M6, M5, LowerTriangular, true) && pass;
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(col-wise)/sparse(row-wise)(UT, diag = 1)", M6, M5, M6, M5,  UpperTriangular, true) && pass;
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(col-wise)/sparse(row-wise)(LT, diag != 1)", M6, M5, M6, M5, LowerTriangular, false) && pass;
+        pass = testtrmmConsistency (ctx1, ctx2, "sparse(col-wise)/sparse(row-wise)(UT, diag != 1)", M6, M5, M6, M5, UpperTriangular, false) && pass;
+
+        SparseMatrix<typename Ring::Element> M5p (n, n);
+	BLAS3::copy (ctx1, M5, M5p);
+        makeNonsingDiag (ctx1.F, M5p, false);
+
+        TransposeMatrix<SparseMatrix<typename Ring::Element> > M6p (M5p);
+
+        RandomSparseStream<Ring, typename SparseMatrix<typename Ring::Element>::Row> stream81 (ctx1.F, (double) k / (double) n, m, n);
+        SparseMatrix<typename Ring::Element> M5n (stream81);
+
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(row-wise)/dense(LT, diag = 1)", M5, M4, M5, M4, LowerTriangular, true) && pass;
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(row-wise)/dense(UT, diag = 1)", M5, M4, M5, M4,  UpperTriangular, true) && pass;
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(row-wise)/dense(LT, diag != 1)", M5p, M4, M5p, M4, LowerTriangular, false) && pass;
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(row-wise)/dense(UT, diag != 1)", M5p, M4, M5p, M4, UpperTriangular, false) && pass;
+
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(row-wise)/sparse(row-wise)(LT, diag = 1)", M5, M5n, M5, M5n, LowerTriangular, true) && pass;
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(row-wise)/sparse(row-wise)(UT, diag = 1)", M5, M5n, M5, M5n,  UpperTriangular, true) && pass;
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(row-wise)/sparse(row-wise)(LT, diag != 1)", M5p, M5, M5p, M5, LowerTriangular, false) && pass;
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(row-wise)/sparse(row-wise)(UT, diag != 1)", M5p, M5, M5p, M5, UpperTriangular, false) && pass;
+
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(col-wise)/dense(LT, diag = 1)", M6, M4, M6, M4, LowerTriangular, true) && pass;
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(col-wise)/dense(UT, diag = 1)", M6, M4, M6, M4,  UpperTriangular, true) && pass;
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(col-wise)/dense(LT, diag != 1)", M6p, M4, M6p, M4, LowerTriangular, false) && pass;
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(col-wise)/dense(UT, diag != 1)", M6p, M4, M6p, M4, UpperTriangular, false) && pass;
+
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(col-wise)/sparse(row-wise)(LT, diag = 1)", M6, M5n, M6, M5n, LowerTriangular, true) && pass;
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(col-wise)/sparse(row-wise)(UT, diag = 1)", M6, M5n, M6, M5n,  UpperTriangular, true) && pass;
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(col-wise)/sparse(row-wise)(LT, diag != 1)", M6p, M5n, M6p, M5n, LowerTriangular, false) && pass;
+        pass = testtrsmConsistency (ctx1, ctx2, "sparse(col-wise)/sparse(row-wise)(UT, diag != 1)", M6p, M5n, M6p, M5n, UpperTriangular, false) && pass;
+
+        pass = testpermute_rowsConsistency(ctx1, ctx2, "sparse(row-wise)", M2, M2) && pass;
+        pass = testpermute_rowsConsistency(ctx1, ctx2, "sparse(col-wise)", M3, M3) && pass;
+
+	LELA::commentator.stop (MSG_STATUS (pass));
+
+        return pass;
+}
+
 template <class Ring, class Modules>
-bool testBLAS3Consistency (LELA::Context<Ring, Modules> &ctx, const char *text, size_t m, size_t n, size_t p, size_t k)
+bool testBLAS3RepsConsistency (LELA::Context<Ring, Modules> &ctx, const char *text, size_t m, size_t n, size_t p, size_t k)
 {
 	std::ostringstream str;
         str << "Testing BLAS3 consistency over <" << text << ">" << std::ends;

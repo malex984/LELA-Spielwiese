@@ -268,7 +268,7 @@ int main (int argc, char **argv)
 
 	commentator.setBriefReportParameters (Commentator::OUTPUT_CONSOLE, false, false, false);
 	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDepth (5);
-	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDetailLevel (Commentator::LEVEL_UNIMPORTANT);
+	commentator.getMessageClass (INTERNAL_DESCRIPTION).setMaxDetailLevel (Commentator::LEVEL_NORMAL);
 	commentator.getMessageClass (TIMING_MEASURE).setMaxDepth (3);
 
 	commentator.start ("BLAS GenericModule, GF2-specialisation, test suite", "BLASGenericModuleGF2");
@@ -356,7 +356,7 @@ int main (int argc, char **argv)
 				 DenseMatrix<Field::Element>::IteratorType ()))
 		pass = false;
 
-	if (!testBLAS2Consistency(ctx, "Consistency", n, m, k))
+	if (!testBLAS2RepsConsistency(ctx, "BLAS2 Consistency", n, m, k))
 		pass = false;
 
 	commentator.stop (MSG_STATUS (pass));
