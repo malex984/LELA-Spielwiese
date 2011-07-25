@@ -88,11 +88,11 @@ bool  MyArithTest (const Ring &R) //  , typename Ring::Element &v
   R.add (sum, R.init (a, _a), R.init (b, _b));
   R.mul (mul, a, b);
 
-  report << "a: " << flush; R.write (report, a) << " (" << a << ") + " << flush;
-  report << "b: " << flush; R.write (report, b) << " (" << b << ") --->>>>> " << flush;
+  report << "a: " << flush; R.write (report, a) << " (" << (void*)a << ") + " << flush;
+  report << "b: " << flush; R.write (report, b) << " (" << (void*)b << ") --->>>>> " << flush;
 
-  report << "sum: " << flush; R.write (report, sum) << ", " << sum << endl << flush;
-  report << "mul: " << flush; R.write (report, mul) << ", " << mul << endl << flush;
+  report << "sum: " << flush; R.write (report, sum) << ", " << (void*)sum << endl << flush;
+  report << "mul: " << flush; R.write (report, mul) << ", " << (void*)mul << endl << flush;
 
   bool _test_divide = false;
   if( R.isZero(a) || R.isZero(b) )
@@ -101,10 +101,10 @@ bool  MyArithTest (const Ring &R) //  , typename Ring::Element &v
   } else
   {
     _test_divide = R.div (div_a, mul, a); assume(_test_divide);
-    report << "div: mul/a: " << flush; R.write (report, div_a) << ", " << div_a << endl << flush;
+    report << "div: mul/a: " << flush; R.write (report, div_a) << ", " << (void*)div_a << endl << flush;
 
     _test_divide = R.div (div_b, mul, b); assume(_test_divide);
-    report << "div: mul/b: " << flush; R.write (report, div_b) << ", " << div_b << endl << flush;
+    report << "div: mul/b: " << flush; R.write (report, div_b) << ", " << (void*)div_b << endl << flush;
 
   }
 
