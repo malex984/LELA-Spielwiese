@@ -19,6 +19,7 @@
 
 #include "lela/util/commentator.h"
 #include "lela/ring/gf2.h"
+#include "lela/ring/old.modular.h"
 #include "lela/blas/context.h"
 #include "lela/blas/level1.h"
 #include "lela/blas/level2.h"
