@@ -25,13 +25,13 @@ DOXYFILE_ENCODING      = UTF-8
 # The PROJECT_NAME tag is a single word (or a sequence of words surrounded
 # by quotes) that should identify the project.
 
-PROJECT_NAME           = lela
+PROJECT_NAME           = LELA
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number.
 # This could be handy for archiving the generated documentation or
 # if some version control system is used.
 
-PROJECT_NUMBER         =
+PROJECT_NUMBER         = 0.1
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute)
 # base path where the generated documentation will be put.
@@ -115,7 +115,7 @@ INLINE_INHERITED_MEMB  = YES
 # path before files name in the file list and in the header files. If set
 # to NO the shortest path that makes the file name unique will be used.
 
-FULL_PATH_NAMES        = NO
+FULL_PATH_NAMES        = YES
 
 # If the FULL_PATH_NAMES tag is set to YES then the STRIP_FROM_PATH tag
 # can be used to strip a user-defined part of the path. Stripping is
@@ -124,7 +124,7 @@ FULL_PATH_NAMES        = NO
 # If left blank the directory from which doxygen is run is used as the
 # path to strip.
 
-STRIP_FROM_PATH        =
+STRIP_FROM_PATH        = . ../lela/
 
 # The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of
 # the path mentioned in the documentation of a class, which tells
@@ -256,7 +256,7 @@ SIP_SUPPORT            = NO
 # setting a simple type. If this is not the case, or you want to show the
 # methods anyway, you should set this option to NO.
 
-IDL_PROPERTY_SUPPORT   = YES
+IDL_PROPERTY_SUPPORT   = NO
 
 # If member grouping is used in the documentation and the DISTRIBUTE_GROUP_DOC
 # tag is set to YES, then doxygen will reuse the documentation of the first
@@ -281,7 +281,7 @@ SUBGROUPING            = YES
 # be useful for C code in case the coding convention dictates that all compound
 # types are typedef'ed and only the typedef is referenced, never the tag name.
 
-TYPEDEF_HIDES_STRUCT   = NO
+TYPEDEF_HIDES_STRUCT   = YES
 
 # The SYMBOL_CACHE_SIZE determines the size of the internal cache use to
 # determine which symbols to keep in memory and which to flush to disk.
@@ -308,17 +308,17 @@ SYMBOL_CACHE_SIZE      = 0
 # Private class members and static file members will be hidden unless
 # the EXTRACT_PRIVATE and EXTRACT_STATIC tags are set to YES
 
-EXTRACT_ALL            = NO
+EXTRACT_ALL            = YES
 
 # If the EXTRACT_PRIVATE tag is set to YES all private members of a class
 # will be included in the documentation.
 
-EXTRACT_PRIVATE        = NO
+EXTRACT_PRIVATE        = YES
 
 # If the EXTRACT_STATIC tag is set to YES all static members of a file
 # will be included in the documentation.
 
-EXTRACT_STATIC         = NO
+EXTRACT_STATIC         = YES
 
 # If the EXTRACT_LOCAL_CLASSES tag is set to YES classes (and structs)
 # defined locally in source files will be included in the documentation.
@@ -347,14 +347,14 @@ EXTRACT_ANON_NSPACES   = NO
 # various overviews, but no documentation section is generated.
 # This option has no effect if EXTRACT_ALL is enabled.
 
-HIDE_UNDOC_MEMBERS     = YES
+HIDE_UNDOC_MEMBERS     = NO
 
 # If the HIDE_UNDOC_CLASSES tag is set to YES, Doxygen will hide all
 # undocumented classes that are normally visible in the class hierarchy.
 # If set to NO (the default) these classes will be included in the various
 # overviews. This option has no effect if EXTRACT_ALL is enabled.
 
-HIDE_UNDOC_CLASSES     = YES
+HIDE_UNDOC_CLASSES     = NO
 
 # If the HIDE_FRIEND_COMPOUNDS tag is set to YES, Doxygen will hide all
 # friend (class|struct|union) declarations.
@@ -375,7 +375,7 @@ HIDE_IN_BODY_DOCS      = NO
 # to NO (the default) then the documentation will be excluded.
 # Set it to YES to include the internal documentation.
 
-INTERNAL_DOCS          = NO
+INTERNAL_DOCS          = YES
 
 # If the CASE_SENSE_NAMES tag is set to NO then Doxygen will only generate
 # file names in lower-case letters. If set to YES upper-case letters are also
@@ -430,7 +430,7 @@ SORT_BRIEF_DOCS        = NO
 # This tag will be ignored for brief docs if SORT_BRIEF_DOCS is set to NO
 # and ignored for detailed docs if SORT_MEMBER_DOCS is set to NO.
 
-SORT_MEMBERS_CTORS_1ST = NO
+SORT_MEMBERS_CTORS_1ST = YES
 
 # If the SORT_GROUP_NAMES tag is set to YES then doxygen will sort the
 # hierarchy of group names into alphabetical order. If set to NO (the default)
@@ -591,49 +591,7 @@ WARN_LOGFILE           = doxy.debug
 # directories like "/usr/src/myproject". Separate the files or directories
 # with spaces.
 
-INPUT                  = reference.doxy \
-		         ../lela/ring/interface.h \
-			 ../lela/element/abstract.h \
-		         ../lela/ring/integers.h \
-			 ../lela/ring/rationals.h \
-			 ../lela/element/rational-element.h \
-			 ../lela/ring/modular.h \
-			 ../lela/ring/gf2.h \
-			 ../lela/ring/type-wrapper.h \
-			 ../lela/vector/traits.h \
-			 ../lela/vector/dense-interface.h \
-			 ../lela/vector/sparse-interface.h \
-			 ../lela/vector/dense01-interface.h \
-			 ../lela/vector/sparse01-interface.h \
-			 ../lela/vector/hybrid01-interface.h \
-			 ../lela/vector/sparse.h \
-			 ../lela/vector/hybrid.h \
-			 ../lela/vector/subvector.h \
-			 ../lela/vector/sparse-subvector.h \
-			 ../lela/vector/stream.h \
-			 ../lela/matrix/traits.h \
-			 ../lela/matrix/interface.h \
-			 ../lela/matrix/dense.h \
-			 ../lela/matrix/sparse.h \
-			 ../lela/matrix/submatrix.h \
-			 ../lela/matrix/transpose.h \
-			 ../lela/matrix/transpose-submatrix.h \
-			 ../lela/matrix/raw-iterator.h \
-			 ../lela/matrix/io.h \
-			 ../lela/blas/context.h \
-			 ../lela/blas/level1.h \
-			 ../lela/blas/level2.h \
-			 ../lela/blas/level3.h \
-			 ../lela/algorithms/strassen-winograd.h \
-			 ../lela/algorithms/elimination.h \
-			 ../lela/algorithms/gauss-jordan.h \
-			 ../lela/algorithms/faugere-lachartre.h \
-			 ../lela/solutions/echelon-form.h \
-			 ../lela/util/debug.h \
-			 ../lela/util/error.h \
-			 ../lela/util/commentator.h \
-			 ../lela/util/timer.h \
-			 ../lela/util/splicer.h
+INPUT                  = reference.doxy ../lela/lela-config.h ../lela/
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is
@@ -650,13 +608,13 @@ INPUT_ENCODING         = UTF-8
 # *.c *.cc *.cxx *.cpp *.c++ *.java *.ii *.ixx *.ipp *.i++ *.inl *.h *.hh *.hxx
 # *.hpp *.h++ *.idl *.odl *.cs *.php *.php3 *.inc *.m *.mm *.py *.f90
 
-FILE_PATTERNS          = 
+FILE_PATTERNS          = *.h *.H *.dox
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories
 # should be searched for input files as well. Possible values are YES and NO.
 # If left blank NO is used.
 
-RECURSIVE              = 
+RECURSIVE              = YES
 
 # The EXCLUDE tag can be used to specify files and/or directories that should
 # excluded from the INPUT source files. This way you can easily exclude a
@@ -668,7 +626,7 @@ EXCLUDE                =
 # directories that are symbolic links (a Unix filesystem feature) are excluded
 # from the input.
 
-EXCLUDE_SYMLINKS       = NO
+EXCLUDE_SYMLINKS       = YES
 
 # If the value of the INPUT tag contains directories, you can use the
 # EXCLUDE_PATTERNS tag to specify one or more wildcard patterns to exclude
@@ -676,7 +634,7 @@ EXCLUDE_SYMLINKS       = NO
 # against the file with absolute path, so to exclude all test directories
 # for example use the pattern */test/*
 
-EXCLUDE_PATTERNS       = 
+EXCLUDE_PATTERNS       = */old/*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
@@ -697,7 +655,7 @@ EXAMPLE_PATH           =
 # and *.h) to filter out the source-files in the directories. If left
 # blank all files are included.
 
-EXAMPLE_PATTERNS       = *.C *.inl *INSTALL *COPYING *HACKING *AUTHORS *.html
+EXAMPLE_PATTERNS       =
 
 # If the EXAMPLE_RECURSIVE tag is set to YES then subdirectories will be
 # searched for input files to be used with the \include or \dontinclude
@@ -749,30 +707,30 @@ FILTER_SOURCE_FILES    = NO
 # Note: To get rid of all source code in the generated output, make sure also
 # VERBATIM_HEADERS is set to NO.
 
-SOURCE_BROWSER         = NO
+SOURCE_BROWSER         = YES
 
 # Setting the INLINE_SOURCES tag to YES will include the body
 # of functions and classes directly in the documentation.
 
-INLINE_SOURCES         = NO
+INLINE_SOURCES         = YES
 
 # Setting the STRIP_CODE_COMMENTS tag to YES (the default) will instruct
 # doxygen to hide any special comment blocks from generated source code
 # fragments. Normal C and C++ comments will always remain visible.
 
-STRIP_CODE_COMMENTS    = YES
+STRIP_CODE_COMMENTS    = NO
 
 # If the REFERENCED_BY_RELATION tag is set to YES
 # then for each documented function all documented
 # functions referencing it will be listed.
 
-REFERENCED_BY_RELATION = NO
+REFERENCED_BY_RELATION =YES
 
 # If the REFERENCES_RELATION tag is set to YES
 # then for each documented function all documented entities
 # called/used by that function will be listed.
 
-REFERENCES_RELATION    = NO
+REFERENCES_RELATION    = YES
 
 # If the REFERENCES_LINK_SOURCE tag is set to YES (the default)
 # and SOURCE_BROWSER tag is set to YES, then the hyperlinks from
@@ -804,7 +762,7 @@ VERBATIM_HEADERS       = NO
 # of all compounds will be generated. Enable this if the project
 # contains a lot of classes, structs, unions or interfaces.
 
-ALPHABETICAL_INDEX     = NO
+ALPHABETICAL_INDEX     = YES
 
 # If the alphabetical index is enabled (see ALPHABETICAL_INDEX) then
 # the COLS_IN_ALPHA_INDEX tag can be used to specify the number of columns
@@ -1076,12 +1034,12 @@ ENUM_VALUES_PER_LINE   = 4
 # JavaScript, DHTML, CSS and frames is required (i.e. any modern browser).
 # Windows users are probably better off using the HTML help feature.
 
-GENERATE_TREEVIEW      = NO
+GENERATE_TREEVIEW      = YES
 
 # By enabling USE_INLINE_TREES, doxygen will generate the Groups, Directories,
 # and Class Hierarchy pages using a tree view instead of an ordered list.
 
-USE_INLINE_TREES       = NO
+USE_INLINE_TREES       = YES
 
 # If the treeview is enabled (see GENERATE_TREEVIEW) then this tag can be
 # used to set the initial width (in pixels) of the frame in which the tree
@@ -1376,7 +1334,7 @@ PERLMOD_MAKEVAR_PREFIX =
 # evaluate all C-preprocessor directives found in the sources and include
 # files.
 
-ENABLE_PREPROCESSING   = YES
+ENABLE_PREPROCESSING   = NO
 
 # If the MACRO_EXPANSION tag is set to YES Doxygen will expand all macro
 # names in the source code. If set to NO (the default) only conditional
@@ -1400,14 +1358,14 @@ SEARCH_INCLUDES        = YES
 # contain include files that are not input files but should be processed by
 # the preprocessor.
 
-INCLUDE_PATH           =
+INCLUDE_PATH           = 
 
 # You can use the INCLUDE_FILE_PATTERNS tag to specify one or more wildcard
 # patterns (like *.h and *.hpp) to filter out the header-files in the
 # directories. If left blank, the patterns specified with FILE_PATTERNS will
 # be used.
 
-INCLUDE_FILE_PATTERNS  =
+INCLUDE_FILE_PATTERNS  = *.h
 
 # The PREDEFINED tag can be used to specify one or more macro names that
 # are defined before the preprocessor is started (similar to the -D option of
@@ -1472,7 +1430,7 @@ ALLEXTERNALS           = NO
 # in the modules index. If set to NO, only the current project's groups will
 # be listed.
 
-EXTERNAL_GROUPS        = YES
+EXTERNAL_GROUPS        = NO
 
 # The PERL_PATH should be the absolute path and name of the perl script
 # interpreter (i.e. the result of `which perl').
@@ -1505,7 +1463,7 @@ MSCGEN_PATH            =
 # inheritance and usage relations if the target is undocumented
 # or is not a class.
 
-HIDE_UNDOC_RELATIONS   = YES
+HIDE_UNDOC_RELATIONS   = NO
 
 # If you set the HAVE_DOT tag to YES then doxygen will assume the dot tool is
 # available from the path. This tool is part of Graphviz, a graph visualization
@@ -1595,7 +1553,7 @@ INCLUDED_BY_GRAPH      = YES
 # the time of a run. So in most cases it will be better to enable call graphs
 # for selected functions only using the \callgraph command.
 
-CALL_GRAPH             = NO
+CALL_GRAPH             = YES
 
 # If the CALLER_GRAPH and HAVE_DOT tags are set to YES then
 # doxygen will generate a caller dependency graph for every global function
@@ -1603,7 +1561,7 @@ CALL_GRAPH             = NO
 # the time of a run. So in most cases it will be better to enable caller
 # graphs for selected functions only using the \callergraph command.
 
-CALLER_GRAPH           = NO
+CALLER_GRAPH           = YES
 
 # If the GRAPHICAL_HIERARCHY and HAVE_DOT tags are set to YES then doxygen
 # will graphical hierarchy of all classes instead of a textual one.

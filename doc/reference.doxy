@@ -1,18 +1,24 @@
 /** \mainpage LELA Reference-Manual
  *
+ * This is the main page of developer's reference documentation for
+ * LELA. It is subdivided into the following groups:
+ * 
+ * - \ref ring "Rings"
+ * - \ref vector "Vectors"
+ * - \ref matrix "Matrices"
+ * - \ref blas "BLAS Matrix- and vector-arithmetic and I/O"
+ * - \ref algorithms "Algorithms"
+ * - \ref solutions "Solutions"
+ * - \ref util "Utilities"
+ * 
  * \defgroup ring Rings
- *
  * \defgroup vector Vectors
- *
  * \defgroup matrix Matrices
- *
  * \defgroup blas BLAS Matrix- and vector-arithmetic and I/O
- *
  * \defgroup algorithms Algorithms
- *
  * \defgroup solutions Solutions
- *
  * \defgroup util Utilities
+ *
  */
 
 // Local Variables:
