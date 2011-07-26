@@ -33,6 +33,8 @@
 
 struct ReferenceCountedElement
 {
+  static omBin lela_reference_counted_numbers_bin;
+
   typedef number SingularNumber;
   typedef coeffs SingularRing;
 
@@ -44,6 +46,16 @@ struct ReferenceCountedElement
   SingularRing   m_coeffs;  ///< Element's Coeff. Domain, needed for delete
 
 
+  void* operator new ( std::size_t size )
+  {
+    //omTypeAlloc(void*, addr, size);
+    return omAlloc0Bin(ReferenceCountedElement::lela_reference_counted_numbers_bin);
+  }
+  void operator delete ( void* block )
+  { //omfree( block );
+    omFreeBin(block, ReferenceCountedElement::lela_reference_counted_numbers_bin);
+  }
+  
   static inline void intrusive_ptr_add_ref(ReferenceCountedElement* p)
   {
     assert( p!= NULL );
@@ -64,9 +76,9 @@ struct ReferenceCountedElement
       delete p; /// TODO: Use Omalloc to delete *m_pointer
     }
   }
-
 }; // Use omalloc for allocating/deallocating...?
 
+omBin ReferenceCountedElement::lela_reference_counted_numbers_bin = omGetSpecBin(sizeof(ReferenceCountedElement));
 
 /// @class Number simple smart pointer guarding numbers.
 ///
@@ -74,8 +86,6 @@ struct ReferenceCountedElement
 /// and destroy the underlying number when it's not needed anymore!
 class Number
 {
-
-  
   public:
     typedef typename ReferenceCountedElement::SingularNumber SingularNumber;
     typedef typename ReferenceCountedElement::SingularRing   SingularRing;
@@ -85,7 +95,7 @@ class Number
     explicit Number( SingularNumber c, SingularRing R, bool add_ref = true )
     {
       assume( n_Test(c, R) );
-      
+
       px = new ReferenceCountedElement(c, R); /// TODO: Use Omalloc to create it!
       assume( px != 0 );
 
@@ -199,7 +209,6 @@ void swap(Number & lhs, Number & rhs)
 {
   lhs.swap(rhs);
 }
-
 
 /** Singular coefficient domain
  *

@@ -49,6 +49,7 @@ done
 if test "x$LIBPOLYS_found" = "xyes"; then
 	AC_DEFINE(HAVE_LIBPOLYS,1,[Enable libpolys])
 	AC_DEFINE_UNQUOTED(LIBPOLYS_HOME,"$LIBPOLYS_HOME",Prefix for libpolys)
+  AC_SUBST(LIBPOLYS_HOME)
 else
 	AC_MSG_RESULT(not found)
 fi
