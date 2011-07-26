@@ -16,6 +16,7 @@
 #ifdef __LELA_HAVE_LIBPOLYS
 
 #include <lela/ring/interface.h>
+#include <lela/util/error.h>
 
 #include <omalloc/omalloc.h>
 #include <misc/auxiliary.h>
@@ -158,7 +159,11 @@ class Number
     inline bool belongs_to(SingularRing R) const 
     {
       if (px != 0)
-          return (R == px->m_coeffs);
+      {
+        assert( R != 0 );
+        assert( R == px->m_coeffs );
+        return (R == px->m_coeffs);
+      }
       
       return (R==0);
     }
@@ -230,14 +235,19 @@ class CoeffDomain
     {
       CleanMe();
       
-      assume (R != NULL);
+      assume (R != 0);
 
+      if( R == 0 )
+        throw LELA::LELAError ("Could not create the needed Singular coeffs!");        
+
+      assert (R != 0);
+      
       _coeffs = R;
       _clean_coeffs = cleanup;
 
-      init( _zero, 0 );
-      init( _one,  1 );
-      init( _minus_one, -1 );
+      init( _zero, (int)0 );
+      init( _one,  (int)1 );
+      init( _minus_one, (int)-1 );
     }
 
     
@@ -280,7 +290,6 @@ class CoeffDomain
     /// the type in which ring elements are represented.
     typedef Number Element;
     
-
 //TODO!//    /// An object of this type is a generator of random ring elements.
 //TODO!//    typedef RandIterInterface RandIter;
 
@@ -290,7 +299,13 @@ class CoeffDomain
     {
       assume( n_Test(y, _coeffs ) );
 
-      return x = Number(y, _coeffs);
+      x = Number(y, _coeffs);
+
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+
+      return x;
+      
     }
     
 
@@ -339,16 +354,27 @@ class CoeffDomain
     /// Version of init which takes a Property rather than an element.
     ///
     /// It should do exactly what the version above taking an element does.
-    template <class Iterator, class Accessor, class T>
-        Element &init (LELA::Property<Iterator, Accessor> x, const T &n) const
+    template <class Iterator, class Accessor>
+        Element &init (LELA::Property<Iterator, Accessor> x, const LELA::integer &n) const
     {
-      return init(x.ref (), n);
+      init(x.ref (), n);
+      
+      assume( x.ref () );
+      assume( x.ref ().belongs_to( _coeffs ) );
+
+      return x.ref ();
+      
     }
 
     template <class Iterator, class Accessor>
         Element &init (LELA::Property<Iterator, Accessor> x) const
     {
-      return x.ref() = zero();
+      x.ref() = zero();
+      
+      assume( x.ref () );
+      assume( x.ref ().belongs_to( _coeffs ) );
+
+      return x.ref ();
     }
 
   /** \brief  Copy one ring element to another.
@@ -364,10 +390,16 @@ class CoeffDomain
 	 */
     Element &copy (Element &x, const Element &y) const
     {      
-      assume( y.belongs_to( _coeffs ) );
       assume( y );
+      assume( y.belongs_to( _coeffs ) );
       
-      return init(x, n_Copy(y, _coeffs));
+      init(x, n_Copy(y, _coeffs));
+      
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+
+      return x;
+      
     }
 
     /// Version of copy which takes a Property rather than an element.
@@ -376,8 +408,8 @@ class CoeffDomain
     template <class Iterator, class Accessor>
         Element &copy (LELA::Property<Iterator, Accessor> x, const Element &y) const
     {
-      assume( y.belongs_to( _coeffs ) );
       assume( y );
+      assume( y.belongs_to( _coeffs ) );
       
       return copy (x.ref (), y);
     }
@@ -444,10 +476,10 @@ class CoeffDomain
      */
     bool areEqual (const Element &x, const Element &y) const
     {
-      assume( x.belongs_to( _coeffs ) );
       assume( x );
-      assume( y.belongs_to( _coeffs ) );
+      assume( x.belongs_to( _coeffs ) );
       assume( y );
+      assume( y.belongs_to( _coeffs ) );
       
       return n_Equal(x, y, _coeffs);
     }
@@ -461,12 +493,17 @@ class CoeffDomain
      */
     Element &add (Element &x, const Element &y, const Element &z) const
     {
-      assume( y.belongs_to( _coeffs ) );
-      assume( z.belongs_to( _coeffs ) );
       assume( y );
+      assume( y.belongs_to( _coeffs ) );
       assume( z );
+      assume( z.belongs_to( _coeffs ) );
       
-      return init(x, n_Add(y, z, _coeffs));
+      init(x, n_Add(y, z, _coeffs));
+      
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+
+      return x;
     }
 
     /** \brief Subtraction, x <-- y - z.
@@ -478,12 +515,17 @@ class CoeffDomain
      */
     Element &sub (Element &x, const Element &y, const Element &z) const
     {
-      assume( y.belongs_to( _coeffs ) );
-      assume( z.belongs_to( _coeffs ) );
       assume( y );
+      assume( y.belongs_to( _coeffs ) );
       assume( z );
+      assume( z.belongs_to( _coeffs ) );
 
-      return init(x, n_Sub(y, z, _coeffs));
+      init(x, n_Sub(y, z, _coeffs));
+      
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+
+      return x;
     }
 
     /** \brief Multiplication, x <-- y * z.
@@ -495,12 +537,17 @@ class CoeffDomain
      */
     Element &mul (Element &x, const Element &y, const Element &z) const
     {
-      assume( y.belongs_to( _coeffs ) );
-      assume( z.belongs_to( _coeffs ) );
       assume( y );
+      assume( y.belongs_to( _coeffs ) );
       assume( z );
+      assume( z.belongs_to( _coeffs ) );
 
-      return init(x, n_Mult(y, z, _coeffs));
+      init(x, n_Mult(y, z, _coeffs));
+          
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+
+      return x;
     }
 
     /** Division, x <-- y / z.
@@ -517,15 +564,19 @@ class CoeffDomain
      */
     bool div (Element &x, const Element &y, const Element &z) const
     {
-      assume( y.belongs_to( _coeffs ) );
-      assume( z.belongs_to( _coeffs ) );
       assume( y );
+      assume( y.belongs_to( _coeffs ) );
       assume( z );
+      assume( z.belongs_to( _coeffs ) );
 
       if( !n_DivBy(y, z, _coeffs) )
         return false;
 
       init(x, n_Div(y, z, _coeffs));
+
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+      
       return true;
     }
 
@@ -538,12 +589,15 @@ class CoeffDomain
      */
     Element &neg (Element &x, const Element &y) const
     {
-      assume( y.belongs_to( _coeffs ) );
       assume( y );
+      assume( y.belongs_to( _coeffs ) );
 
       copy(x, y); assume( &y != &x ); // real copy!
       x.raw_set( n_Neg(x, _coeffs) ); // Note: n_Neg creates NO NEW number!
       
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+
       return x;
 
     }
@@ -561,13 +615,17 @@ class CoeffDomain
      */
     bool inv (Element &x, const Element &y) const
     {
-      assume( y.belongs_to( _coeffs ) );
       assume( y );
+      assume( y.belongs_to( _coeffs ) );
 
       if( !n_DivBy(one(), y, _coeffs) )
         return false;
 
       init(x, n_Invers(y, _coeffs));
+
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+      
       return true;      
       
     }
@@ -581,12 +639,12 @@ class CoeffDomain
      */
     Element &axpy (Element &r, const Element &a, const Element &x, const Element &y) const
     {
-      assume( a.belongs_to( _coeffs ) );
       assume( a );
-      assume( x.belongs_to( _coeffs ) );
+      assume( a.belongs_to( _coeffs ) );
       assume( x );
-      assume( y.belongs_to( _coeffs ) );
+      assume( x.belongs_to( _coeffs ) );
       assume( y );
+      assume( y.belongs_to( _coeffs ) );
       
       return addin(mul(r, a, x), y);
       
@@ -608,8 +666,8 @@ class CoeffDomain
      */
     bool isZero (const Element &x) const
     {
-      assume( x.belongs_to( _coeffs ) );
       assume( x );
+      assume( x.belongs_to( _coeffs ) );
       
       return n_IsZero(x, _coeffs);
     }
@@ -625,8 +683,8 @@ class CoeffDomain
      */
     bool isOne (const Element &x) const
     {
-      assume( x.belongs_to( _coeffs ) );
       assume( x );
+      assume( x.belongs_to( _coeffs ) );
 
       return n_IsOne(x, _coeffs);
     }
@@ -652,6 +710,11 @@ class CoeffDomain
      */
     Element &addin (Element &x, const Element &y) const
     {
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+      assume( y );
+      assume( y.belongs_to( _coeffs ) );
+      
       return add(x, x, y); // No inplace addition -> TODOs!
     }
 
@@ -666,6 +729,11 @@ class CoeffDomain
      */
     Element &subin (Element &x, const Element &y) const
     {
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+      assume( y );
+      assume( y.belongs_to( _coeffs ) );
+
       return sub(x, x, y);  // No inplace subtraction!!!?!
     }
 
@@ -680,6 +748,11 @@ class CoeffDomain
      */
     Element &mulin (Element &x, const Element &y) const
     {
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+      assume( y );
+      assume( y.belongs_to( _coeffs ) );
+      
       return mul(x, x, y); // TODO: n_InpMult?
     }
 
@@ -698,6 +771,11 @@ class CoeffDomain
       template <class Iterator, class Accessor>
           Element &mulin (LELA::Property<Iterator, Accessor> x, const Element &y) const
       {
+        assume( x.ref () );
+        assume( x.ref ().belongs_to( _coeffs ) );
+        assume( y );
+        assume( y.belongs_to( _coeffs ) );
+        
         return mulin (x.ref (), y);
       }
 
@@ -718,10 +796,10 @@ class CoeffDomain
      */
     bool divin (Element &x, const Element &y) const
     {
-      assume( x.belongs_to( _coeffs ) );
       assume( x );
-      assume( y.belongs_to( _coeffs ) );
+      assume( x.belongs_to( _coeffs ) );
       assume( y );
+      assume( y.belongs_to( _coeffs ) );
 
 
       if( !n_DivBy(x, y, _coeffs) )
@@ -729,6 +807,9 @@ class CoeffDomain
       
       init(x, n_Div(x, y, _coeffs));
 
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+      
       return true;
     }
 
@@ -742,11 +823,14 @@ class CoeffDomain
      */
     Element &negin (Element &x) const
     {
-      assume( x.belongs_to( _coeffs ) );
       assume( x );
+      assume( x.belongs_to( _coeffs ) );
       
       Element y; copy(y, x);  assume( &y != &x ); // real copy!
       y.raw_set( n_Neg(y, _coeffs) );  // Note: n_Neg creates NO NEW number!
+
+      assume( y );
+      assume( y.belongs_to( _coeffs ) );
       
       return x = y;
     }
@@ -761,13 +845,18 @@ class CoeffDomain
      */
     bool invin (Element &x) const
     {
-      assume( x.belongs_to( _coeffs ) );
       assume( x );
+      assume( x.belongs_to( _coeffs ) );
 
       Element y;
       
       if( inv(y, x) )
+      {
+        assume( y );
+        assume( y.belongs_to( _coeffs ) );
+        
         return x = y;
+      }
       
       return false;
       
@@ -784,6 +873,13 @@ class CoeffDomain
      */
     Element &axpyin (Element &r, const Element &a, const Element &x) const
     {
+      assume( r );
+      assume( r.belongs_to( _coeffs ) );
+      assume( a );
+      assume( a.belongs_to( _coeffs ) );
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+      
       Element t;
       return addin(r, mul(t, a, x));
       
@@ -831,20 +927,17 @@ class CoeffDomain
      */
     std::ostream &write (std::ostream &os, const Element &x) const
     {
-      assume( x.belongs_to( _coeffs ) );
       assume( x );
+      assume( x.belongs_to( _coeffs ) );
       
-      // TODO: writing an undefined element / QQ!!! :(((
-
-      // TODO: this is _REALLY_ ugly!
-      BaseElement t = n_Copy(x, _coeffs);
+      BaseElement t = n_Copy(x, _coeffs); // TODO: this is _REALLY_ ugly!
       assume( n_Test(t, _coeffs) );
       
       StringSetS("");
       n_Write(t, _coeffs); 
       const char* s = StringAppendS("");
 
-      assume( n_Test(t, _coeffs) ); // and, yes this will fail as well 
+      assume( n_Test(t, _coeffs) );
       n_Delete(&t, _coeffs);
 
       return os << s;
@@ -891,8 +984,8 @@ class CoeffDomain
     /// Return a reference to the zero-element of the ring
     const Element &zero () const
     {
-      assume( _zero.belongs_to( _coeffs ) );
       assume( _zero );      
+      assume( _zero.belongs_to( _coeffs ) );
       assume( n_IsZero(_zero, _coeffs) );
 
       return _zero;
@@ -901,9 +994,8 @@ class CoeffDomain
     /// Return a reference to the one-element of the ring
     const Element &one () const
     {
-      assume( _one.belongs_to( _coeffs ) );
       assume( _one );
-      
+      assume( _one.belongs_to( _coeffs ) );      
       assume( n_IsOne(_one, _coeffs) );
       
       return _one;      
@@ -912,9 +1004,8 @@ class CoeffDomain
     /// Return a reference to the negative of the one-element of the ring
     const Element &minusOne () const
     {
-      assume( _minus_one.belongs_to( _coeffs ) );
       assume( _minus_one );
-
+      assume( _minus_one.belongs_to( _coeffs ) );
       assume( n_IsMOne(_minus_one, _coeffs) );
       
       return _minus_one;      
@@ -935,8 +1026,8 @@ class CoeffDomain
      */
     int &convert (int &n, const Element &y) const
     {
-      assume( y.belongs_to( _coeffs ) );
       assume( y );
+      assume( y.belongs_to( _coeffs ) );
 
       BaseElement t = n_Copy(y, _coeffs);
       assume( n_Test(t, _coeffs) );
@@ -963,15 +1054,15 @@ class CoeffDomain
 
     inline void cleanup(Element& y) const
     {
-      assume( y.belongs_to( _coeffs ) );
       assume( y );
+      assume( y.belongs_to( _coeffs ) );
 
       y.reset();      
     }
 
     inline bool test(Element& y) const
     {
-      assume( y.belongs_to( _coeffs ) );      
+      assume( y.belongs_to( _coeffs ) );
       return bool(y);
     }
 
