@@ -39,8 +39,6 @@ using namespace LELA;
 #error Cannot be used without libpolys
 #endif 
 
-
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -61,7 +59,7 @@ bool  MyArithTest (const Ring &R) //  , typename Ring::Element &v
   commentator.start ("MyArithTest<Ring>(R)", __FUNCTION__);
 
   ostream &report = commentator.report (Commentator::LEVEL_NORMAL, INTERNAL_DESCRIPTION);  // TDO: ASK BRAD!!!! 
-  ostream &error = commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR);
+//  ostream &error = commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR);
 
 
   Context<Ring> ctx(R);
@@ -422,7 +420,9 @@ BOOLEAN simple(const string tn, const n_coeffType _type, void* param = NULL)
       string title = "MyArithTest ( CoeffDomain(_type, param) ) for [" + tn + "]";
       commentator.start (title.c_str(), __FUNCTION__);
 
-      pass = MyArithTest(CoeffDomain(_type, param)) && pass; 
+      CoeffDomain R(_type, param);
+
+      pass = MyArithTest(R) && pass; 
 
       commentator.stop (MSG_STATUS (pass)); 
     }
@@ -513,16 +513,7 @@ int main (int argc, char **argv)
 
   // due to coeffs/ffields.h
   // TODO: remedy this!
-  struct 
-  {
-    int GFChar;
-    int GFDegree;
-    char* GFPar_name;
-  } param;
-
-  param.GFChar= 5;
-  param.GFDegree= 2;
-  param.GFPar_name= "Q";
+  GFInfo param = { 5, 2, "Q" };
 
   pass = simple("GF", n_GF, (void*)&param) && pass;
   
