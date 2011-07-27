@@ -1,12 +1,16 @@
-/* lela/ring/coeffs.h
+// -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+/** @headerfile coeffs.h lela/ring/coeffs.h
+ * 
+ * This file containg the wrappers for Singular numbers.
+ *
+ * ABSTRACT: These wrappers are needed in order to use the
+ * Singular numbers inside the LELA.
+ *
  * Copyright (C) 2011 Oleksandr Motsak
  *
- * Written by Oleksand Motsak <http://goo.gl/mcpzY>
- *
- * ------------------------------------
- *
- * BSD
- */
+ * Written by @author Oleksand Motsak <http://goo.gl/mcpzY>
+ **/
+/*****************************************************************************/
 
 #ifndef __SINGULAR_ring_coeff_H
 #define __SINGULAR_ring_coeff_H
@@ -30,7 +34,8 @@
 #include <cassert>
 
 
-
+/// This structure is needed since LELA expects
+// 
 struct ReferenceCountedElement
 {
   static omBin lela_reference_counted_numbers_bin;
@@ -80,10 +85,16 @@ struct ReferenceCountedElement
 
 omBin ReferenceCountedElement::lela_reference_counted_numbers_bin = omGetSpecBin(sizeof(ReferenceCountedElement));
 
-/// @class Number simple smart pointer guarding numbers.
+/// @class Number simple smart pointer guarding Singular numbers.
 ///
-/// Its purpose is to count references (in assigns etc.)
-/// and destroy the underlying number when it's not needed anymore!
+/// This class is needed since LELA expects Elements to be able to
+/// construct and destruct themselves.
+/// 
+/// Moreover its purpose is to count references and destroy the
+/// underlying number when it's not references anymore.
+///
+/// The use of underlying Singular number before assiging or
+/// initializing a Number is a bug and will trigger an assert failure
 class Number
 {
   public:
@@ -136,20 +147,6 @@ class Number
       px->m_element = c;
     }    
 
-/*
-    SingularNumber const & operator*() const
-    {
-      assert( px != 0 );
-      assume( n_Test(px->m_element, px->m_coeffs) );
-      return px->m_element;
-    }
-    SingularNumber & operator*()
-    {
-      assert( px != 0 );
-//      assume( n_Test(px->m_element, px->m_coeffs) );
-      return px->m_element;
-    } */
-    
     operator SingularNumber() const
     {
       return get();
@@ -163,7 +160,7 @@ class Number
       if (px->m_coeffs == 0)
         return false;
       
-      return n_Test(px->m_element, px->m_coeffs);
+      return n_Test(get(), px->m_coeffs);
     }
 
     inline bool belongs_to(SingularRing R) const 
@@ -185,14 +182,15 @@ class Number
       rhs.px = tmp;
     }
 
-  private:
-    inline SingularRing base_ring() const 
+    long get_counter() const // TODO: can be used in all the in-place ring arithmetic routines of CoeffDomain!
     {
-      if (px != 0)
-
-      return (0);
+      assert( px != 0 );
+      const long c = px->m_counter;
+      assert( c >= 0 );
+      return c;
     }
 
+  private:
     SingularNumber get() const
     {
       assert( px != 0 );      
@@ -601,8 +599,7 @@ class CoeffDomain
       assume( y );
       assume( y.belongs_to( _coeffs ) );
 
-      copy(x, y); assume( &y != &x ); // real copy!
-      x.raw_set( n_Neg(x, _coeffs) ); // Note: n_Neg creates NO NEW number!
+      init(x, n_Neg( n_Copy(y, _coeffs), _coeffs) ); // Note: n_Neg creates NO NEW number!
       
       assume( x );
       assume( x.belongs_to( _coeffs ) );
@@ -834,14 +831,19 @@ class CoeffDomain
     {
       assume( x );
       assume( x.belongs_to( _coeffs ) );
-      
-      Element y; copy(y, x);  assume( &y != &x ); // real copy!
-      y.raw_set( n_Neg(y, _coeffs) );  // Note: n_Neg creates NO NEW number!
 
-      assume( y );
-      assume( y.belongs_to( _coeffs ) );
-      
-      return x = y;
+      if( x.get_counter() == 1 )
+      {
+        x.raw_set( n_Neg(x, _coeffs) );  // Note: n_Neg creates NO NEW number!
+        return x;
+      } else
+      {
+        Element y; copy(y, x);  assume( &y != &x ); // real copy!
+        y.raw_set( n_Neg(y, _coeffs) );  // Note: n_Neg creates NO NEW number!
+        assume( y );
+        assume( y.belongs_to( _coeffs ) );
+        return x = y;
+      }
     }
 
     /** Inplace Multiplicative Inverse.
