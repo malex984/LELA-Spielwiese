@@ -129,6 +129,16 @@ class CoeffDomain
 
     /// @name Object Management
     //@{    
+    Element &init (Element &x) const
+    {
+      x = zero();
+      
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+
+      return x;
+    }
+    
     inline Element &init(Element &x, BaseElement y) const
     {
       assume( n_Test(y, _coeffs ) );
@@ -137,25 +147,31 @@ class CoeffDomain
 
       assume( x );
       assume( x.belongs_to( _coeffs ) );
+      assume( x.get_counter() == 1 );
 
       return x;
       
     }
-    
 
-  /** \brief Initialization of ring element from an integer.
-	 *
-	 * x becomes the image of n under the natural map from the
-	 * integers to the ring. The element x need not have been
-	 * previously initialised.
-	 *
-	 * @return reference to x.
-	 * @param x output ring element.
-	 * @param n input integer.
-	 */
-    Element &init (Element &x, const int i = 0) const
+    /** \brief Initialization of ring element from an integer.
+     *
+     * x becomes the image of n under the natural map from the
+     * integers to the ring. The element x need not have been
+     * previously initialised.
+     *
+     * @return reference to x.
+     * @param x output ring element.
+     * @param n input integer.
+     */
+    Element &init (Element &x, const int i) const
     {
-      return init(x, n_Init(i, _coeffs));
+      x = Number(i, _coeffs);
+
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+      assume( x.get_counter() == 1 );
+
+      return x;
     }
 
     Element &init (Element &x, const unsigned int &y) const
@@ -227,10 +243,11 @@ class CoeffDomain
       assume( y );
       assume( y.belongs_to( _coeffs ) );
       
-      init(x, n_Copy(y, _coeffs));
+      x = y.copy();
       
       assume( x );
       assume( x.belongs_to( _coeffs ) );
+      assume( x.get_counter() == 1 );
 
       return x;
       

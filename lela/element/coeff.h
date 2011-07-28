@@ -100,8 +100,23 @@ class Number
 
     Number () : px (NULL) {}
 
+    explicit Number( const int i, SingularRing R )
+    {
+      assert( R != 0 );
+      
+      SingularNumber c = n_Init(i, R);
+      assume( n_Test(c, R) );
+
+      px = new ReferenceCountedElement(c, R); /// TODO: Use Omalloc to create it!
+      assume( px != 0 );
+
+      ReferenceCountedElement::intrusive_ptr_add_ref( px );
+    }
+
     explicit Number( SingularNumber c, SingularRing R, bool add_ref = true )
     {
+      assert( R != 0 );
+      
       assume( n_Test(c, R) );
 
       px = new ReferenceCountedElement(c, R); /// TODO: Use Omalloc to create it!
@@ -183,7 +198,21 @@ class Number
       rhs.px = tmp;
     }
 
-    long get_counter() const // TODO: can be used in all the in-place ring arithmetic routines of CoeffDomain!
+    Number copy() const
+    {
+      const SingularRing R = get_ring();
+      Number cpy( n_Copy(get_number(), R), R );
+
+      assume( cpy );
+      assume( cpy.belongs_to(R) );
+
+      assume( n_Equal(get_number(), cpy.get_number(), R) );
+      
+      return cpy;
+    }
+
+
+    inline long get_counter() const // TODO: can be used in all the in-place ring arithmetic routines of CoeffDomain!
     {
       assert( px != 0 );
       const long c = px->m_counter;
