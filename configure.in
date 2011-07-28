@@ -1,11 +1,11 @@
-# Copyright (c) 2010 the LELA group
-# This file is part of LELA (and probably stolen here and there)
-# see COPYING for licence
+# Copyright 2010 members of the LinBox group
+# 
+# This file is part of LELA, licensed under the GNU General Public
+# License version 3. See COPYING for more information.
+
 AC_PREREQ(2.50)
-#AC_INIT(lela/lela.doxy)
 AC_INIT(lela,0.1.0,hovinen@gmail.com) 
 AM_INIT_AUTOMAKE([1.8 gnu no-dependencies])
-#AM_CONFIG_HEADER([config.h])
 AM_CONFIG_HEADER([lela/lela-config.h])
 AX_PREFIX_CONFIG_H(lela/lela-config.h, __LELA)
 AC_PATH_PROG(RM, rm, $FALSE)
@@ -165,11 +165,11 @@ LB_CHECK_LIBPOLYS
 LB_OPT
 LB_DOC
 
-AC_PATH_PROG(XSLTPROC,xsltproc,"no")
+AC_PATH_PROG(XMLTO,xmlto,"no")
 
-if test "x$XSLTPROC" = "xno" ; then
-  echo "Note: xsltproc not found. Cannot rebuild documentation."
-  XSLTPROC=
+if test "x$XMLTO" = "xno" ; then
+  echo "Note: xmlto not found. Cannot rebuild documentation."
+  XMLTO=
 fi
 
 AC_PATH_PROG(DOXYGEN,doxygen,"no")
@@ -179,7 +179,7 @@ if test "x$DOXYGEN" = "xno" ; then
   DOXYGEN=
 fi
 
-AM_CONDITIONAL(BUILD_DOCS,[test x$XSLTPROC != x -a x$DOXYGEN != x])
+AM_CONDITIONAL(BUILD_DOCS,[test x$XMLTO != x -a x$DOXYGEN != x])
 
 # this is bogus so far as I can tell.  -bds
 #CXXFLAGS="${GMP_CFLAGS} ${NTL_CFLAGS} ${GIVARO_CFLAGS} ${SACLIB_CFLAGS} ${CXXFLAGS}"

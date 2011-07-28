@@ -1,17 +1,20 @@
 /* lela/ring/old.modular.h
- * Copyright (C) 1999-2001 William J Turner,
- *               2001 Bradford Hovinen
+ * Copyright 1999-2001 William J Turner,
+ *           2001 Bradford Hovinen
  *
  * Written by William J Turner <wjturner@math.ncsu.edu>,
  *            Bradford Hovinen <hovinen@cis.udel.edu>
  *
- * ------------------------------------
+ * Integers modulo n
  *
- * See COPYING for license information.
+ * ------------------------------------
+ * 
+ * This file is part of LELA, licensed under the GNU General Public
+ * License version 3. See COPYING for more information.
  */
 
-#ifndef __LELA_ring_modular_H
-#define __LELA_ring_modular_H
+#ifndef __LELA_RING_MODULAR_H
+#define __LELA_RING_MODULAR_H
 
 #include <iostream>
 #include <climits>
@@ -91,6 +94,16 @@ struct ModularTraits
 	static T &valid_rep (T &v, const Element &modulus)
 		{ return shift_down (v, modulus); }
 
+	/// Negate the given element
+	template <class T>
+	static T &neg (T &v, const Element &modulus)
+		{ v = modulus - v; return valid_rep (v, modulus); }
+
+	/// Subtract the one element from the other
+	template <class T>
+	static T &sub (T &v, const Element &y, const Element &modulus)
+		{ v += modulus - y; return valid_rep (v, modulus); }
+
 	/// Get what is in any event a positive representation of the given element
 	template <class T>
 	static T &positive_rep (T &v, const Element &modulus)
@@ -131,6 +144,12 @@ struct ModularTraits<uint8>
 	static T &valid_rep (T &v, const Element &modulus)
 		{ return shift_down (v, modulus); }
 	template <class T>
+	static T &neg (T &v, const Element &modulus)
+		{ v = modulus - v; return valid_rep (v, modulus); }
+	template <class T>
+	static T &sub (T &v, const Element &y, const Element &modulus)
+		{ v += modulus - y; return valid_rep (v, modulus); }
+	template <class T>
 	static T &positive_rep (T &v, const Element &modulus)
 		{ return v; }
 };
@@ -167,6 +186,12 @@ struct ModularTraits<uint16>
 	template <class T>
 	static T &shift_down (T &v, uint16 modulus)
 		{ if (v >= modulus) v -= modulus; return v; }
+	template <class T>
+	static T &neg (T &v, const Element &modulus)
+		{ v = modulus - v; return valid_rep (v, modulus); }
+	template <class T>
+	static T &sub (T &v, const Element &y, const Element &modulus)
+		{ v += modulus - y; return valid_rep (v, modulus); }
 	template <class T>
 	static T &valid_rep (T &v, const Element &modulus)
 		{ return shift_down (v, modulus); }
@@ -206,6 +231,12 @@ struct ModularTraits<uint32>
 	static T &shift_down (T &v, uint32 modulus)
 		{ if ((FatElement) v >= (FatElement) modulus) v -= modulus; return v; }
 	template <class T>
+	static T &neg (T &v, const Element &modulus)
+		{ v = modulus - v; return valid_rep (v, modulus); }
+	template <class T>
+	static T &sub (T &v, const Element &y, const Element &modulus)
+		{ v += modulus - y; return valid_rep (v, modulus); }
+	template <class T>
 	static T &valid_rep (T &v, const Element &modulus)
 		{ return shift_down (v, modulus); }
 	template <class T>
@@ -226,9 +257,9 @@ struct ModularTraits<float>
 	static Element &reduce (Element &r, const FE &a, Element m) 
 		{ integer t = (integer) a % (integer) m; shift_down (t, m); return r = t.get_d (); }
 	static Element &reduce (Element &r, FatElement a, Element m) 
-		{ r = fmod (a, m); return shift_up (shift_down (r, m), m); }
+		{ r = fmod (a, m); return shift_down (shift_up (r, m), m); }
 	static double &reduce (double &r, FatElement a, Element m) 
-		{ r = fmod (a, m); return shift_up (shift_down (r, m), m); }
+		{ r = fmod (a, m); return shift_down (shift_up (r, m), m); }
 	static Element &init_modulus (Element &elt, integer x)
 		{ elt = x.get_d (); return elt; }
 	static std::ostream &write (std::ostream &os, const Element &x)
@@ -242,8 +273,14 @@ struct ModularTraits<float>
 	static T &shift_down (T &v, float modulus)
 		{ if (v > modulus / 2) v -= modulus; return v; }
 	template <class T>
+	static T &neg (T &v, const Element &modulus)
+		{ return v = -v; }
+	template <class T>
+	static T &sub (T &v, const Element &y, const Element &modulus)
+		{ v -= y; return valid_rep (v, modulus); }
+	template <class T>
 	static T &valid_rep (T &v, const Element &modulus)
-		{ return shift_up (shift_down (v, modulus), modulus); }
+		{ return shift_down (shift_up (v, modulus), modulus); }
 	template <class T>
 	static T positive_rep (T v, const Element &modulus)
 		{ if (v < 0) return v + modulus; else return v; }
@@ -275,6 +312,12 @@ struct ModularTraits<double>
 	template <class T>
 	static T &shift_down (T &v, double modulus)
 		{ if (v > modulus / 2) v -= modulus; return v; }
+	template <class T>
+	static T &neg (T &v, const Element &modulus)
+		{ return v = -v; }
+	template <class T>
+	static T &sub (T &v, const Element &y, const Element &modulus)
+		{ v -= y; return valid_rep (v, modulus); }
 	template <class T>
 	static T &valid_rep (T &v, const Element &modulus)
 		{ return shift_up (shift_down (v, modulus), modulus); }
@@ -384,8 +427,7 @@ public:
 	Element &sub (Element &x, const Element &y, const Element &z) const
 	{ 
 		typename ModularTraits<Element>::FatElement ty = y;
-		ty += _modulus - z;
-		ModularTraits<Element>::valid_rep (ty, _modulus);
+		ModularTraits<Element>::sub (ty, z, _modulus);
 		return x = ty;
 	}
  
@@ -413,7 +455,7 @@ public:
 	}
  
 	Element &neg (Element &x, const Element &y) const
-		{ if (y == 0) return x = y; else x = _modulus - y; return ModularTraits<Element>::shift_down (x, _modulus); }
+		{ x = y; return ModularTraits<Element>::neg (x, _modulus); }
  
 	bool inv (Element &x, const Element &y) const
 	{
@@ -449,8 +491,7 @@ public:
 	Element &subin (Element &x, const Element &y) const
 	{
 		typename ModularTraits<Element>::FatElement tx = x;
-		tx += _modulus - y;
-		ModularTraits<Element>::valid_rep (tx, _modulus);
+		ModularTraits<Element>::sub (tx, y, _modulus);
 		return x = tx;
 	}
  
@@ -478,7 +519,7 @@ public:
 	}
  
 	Element &negin (Element &x) const
-		{ if (x == 0) return x; else x = _modulus - x; return ModularTraits<Element>::shift_down (x, _modulus); }
+		{ return ModularTraits<Element>::neg (x, _modulus); }
  
 	bool invin (Element &x) const
 		{ return inv (x, x); }
@@ -656,7 +697,7 @@ struct AllModules<Modular<Element> > : public StrassenModule<Modular<Element>, Z
 
 #include "lela/randiter/old.modular.h"
 
-#endif // __LELA_ring_modular_H
+#endif // __LELA_RING_MODULAR_H
 
 // Local Variables:
 // mode: C++

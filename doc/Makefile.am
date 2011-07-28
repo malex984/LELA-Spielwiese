@@ -1,5 +1,10 @@
+# Copyright 2011 Bradford Hovinen
+# 
+# This file is part of LELA, licensed under the GNU General Public
+# License version 3. See COPYING for more information.
+
 if BUILD_DOCS
-DOC_TARGETS = index.html
+DOC_TARGETS = tutorial.html
 REFDOC_TARGETS = 
 endif
 
@@ -9,37 +14,23 @@ docdir = $(datadir)/doc/lela-$(VERSION)
 doc_DATA = $(DOC_TARGETS)
 
 refdocdir = $(datadir)/doc/lela-$(VERSION)/reference
+refdoc_DATA = $(REFDOC_TARGETS)
 
-index.html: tutorial.xml
-	xmlto xhtml -m config.xsl tutorial.xml
+tutorial.html: tutorial.xml
+	$(XMLTO) xhtml -m config.xsl tutorial.xml
+	sed -e s/index.html/tutorial.html/g index.html >tutorial.html
+	rm -f index.html
 
-reference: reference.xml
-	mkdir reference
-	$(XSLTPROC) --stringparam base.dir reference/ http://docbook.sourceforge.net/release/xsl/current/html/chunk.xsl reference.xml
-
-reference.xml: reference-boost.xml boostbook-xsl
-	$(XSLTPROC) http://www.singular.uni-kl.de/lela/boostbook-xsl/docbook.xsl reference-boost.xml >reference.xml
-
-reference-boost.xml: reference-doxy.xml boostbook-xsl
-	$(XSLTPROC) http://www.singular.uni-kl.de/lela/boostbook-xsl/doxygen/doxygen2boostbook.xsl reference-doxy.xml >reference-boost.xml
-
-reference-doxy.xml: xml boostbook-xsl
-	$(XSLTPROC) http://www.singular.uni-kl.de/lela/boostbook-xsl/doxygen/collect.xsl xml/index.xml >reference-doxy.xml
-
-xml:
+html:
 	$(DOXYGEN)
 
 EXTRA_DIST = \
 	tutorial.xml	\
+	tutorial.html	\
 	caution.png	\
 	note.png	\
 	config.xsl	\
-	docbook.css	\
-	index.html
+	docbook.css
 
 MAINTAINERCLEANFILES = \
-	index.html		\
-	reference.html		\
-	reference.xml		\
-	reference-boost.xml	\
-	reference-doxy.xml
+	tutorial.html

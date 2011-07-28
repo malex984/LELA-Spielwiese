@@ -3,11 +3,12 @@
  *
  * Written by Bradford Hovinen <hovinen@gmail.com>
  *
- * ---------------------------------------------------------
- *
- * See COPYING for license information.
- *
  * Benchmarks for BLAS-routines
+ *
+ * ---------------------------------------------------------
+ * 
+ * This file is part of LELA, licensed under the GNU General Public
+ * License version 3. See COPYING for more information.
  */
 
 #include "lela/util/commentator.h"
@@ -222,22 +223,6 @@ int main (int argc, char **argv)
 //		runBenchmarks (ctx_gen, "GenericModule", "GF2");
 	}
 
-<<<<<<< HEAD
-	if (enable_uint8)
-		runBenchmarksForElement<uint8> (q_uint8, "AllModular<uint8>");
-
-	if (enable_uint32)
-		runBenchmarksForElement<uint32> (q_uint32, "AllModular<uint32>");
-
-||||||| merged common ancestors
-	if (enable_uint8)
-		runBenchmarksForElement<uint8> (q_uint8, "Modular<uint8>");
-
-	if (enable_uint32)
-		runBenchmarksForElement<uint32> (q_uint32, "Modular<uint32>");
-
-=======
->>>>>>> origin-lela/master
 	if (enable_float)
 		runBenchmarksForElement<float> (q_float, "AllModular<float>");
 
@@ -245,10 +230,10 @@ int main (int argc, char **argv)
 		runBenchmarksForElement<double> (q_double, "AllModular<double>");
 
 	if (enable_uint8)
-		runBenchmarksForElement<uint8> (q_uint8, "Modular<uint8>");
+		runBenchmarksForElement<uint8> (q_uint8, "AllModular<uint8>");
 
 	if (enable_uint32)
-		runBenchmarksForElement<uint32> (q_uint32, "Modular<uint32>");
+		runBenchmarksForElement<uint32> (q_uint32, "AllModular<uint32>");
 
 	commentator.stop ("done");
 
