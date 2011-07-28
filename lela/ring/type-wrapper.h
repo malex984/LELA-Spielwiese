@@ -6,8 +6,9 @@
  *            Bradford Hovinen <hovinen@cis.udel.edu>
  *
  * ------------------------------------
- *
- * See COPYING for license information.
+ * 
+ * This file is part of LELA, licensed under the GNU General Public
+ * License version 3. See COPYING for more information.
  */
  
 #ifndef __LELA_RING_TYPE_WRAPPER_H
@@ -196,6 +197,8 @@ public:
 
 }; // template <class K> class TypeWrapperRing
 
+#ifdef __LELA_BLAS_AVAILABLE
+
 template <class Element>
 struct BLASModule : public GenericModule<TypeWrapperRing<Element> >
 {
@@ -219,6 +222,8 @@ struct AllModules<TypeWrapperRing<double> > : public BLASModule<double>
 
 	AllModules (const TypeWrapperRing<double> &R) : BLASModule<double> (R) {}
 };
+
+#endif // __LELA_BLAS_AVAILABLE
 
 } // namespace LELA
 

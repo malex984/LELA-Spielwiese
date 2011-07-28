@@ -3,11 +3,12 @@
  *
  * Written by Florian Fischer <florian-fischer@gmx.net>
  *
+ * Test suite for BLAS routines using CBLAS-module
+ *
  * ---------------------------------------------------------
- *
- * See COPYING for license information.
- *
- * Test suite for BLAS routines using BLAS modules
+ * 
+ * This file is part of LELA, licensed under the GNU General Public
+ * License version 3. See COPYING for more information.
  */
 
 #include "lela/lela-config.h"
@@ -73,12 +74,11 @@ bool testscalcblasConsistency  (LELA::Context<Ring, Modules1> &ctx1,
 	BLAS3::write (ctx2, report, A4);
 
 	if (!BLAS3::equal (ctx1, A3, A4))
-		{
-			commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR)
-				<< "ERROR: a A_1 !=  a A_2 " << std::endl;
-			pass = false;
-		}
-
+	{
+		commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR)
+			<< "ERROR: a A_1 !=  a A_2 " << std::endl;
+		pass = false;
+	}
 
 	commentator.stop (MSG_STATUS (pass));
 
@@ -135,11 +135,11 @@ bool testaxpycblasConsistency  (LELA::Context<Ring, Modules1> &ctx1,
 	BLAS3::write (ctx2, report, A8);
 
         if (!BLAS3::equal (ctx1, A7, A8))
-		{
-			commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR)
-				<< "ERROR: a A_1 + A_2  !=  a A_3 + A_4 " << std::endl;
-			pass = false;
-		}
+	{
+		commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_ERROR)
+			<< "ERROR: a A_1 + A_2  !=  a A_3 + A_4 " << std::endl;
+		pass = false;
+	}
 
         commentator.stop (MSG_STATUS (pass));
 
@@ -307,6 +307,7 @@ int main (int argc, char **argv)
 
 	commentator.start ("BLAS BLASModule test-suite", "cBLASModule");
 
+#ifdef __LELA_BLAS_AVAILABLE
 	TypeWrapperRing<float> R_TW_float;
 	Modular<float> F_float (q_float);
 	Context<TypeWrapperRing<float>, BLASModule<float> > ctx_float (R_TW_float);
@@ -319,6 +320,10 @@ int main (int argc, char **argv)
 
 	pass = testBLASModulesConsistency(F_float, ctx_float, ctx_float_gen, "Modular<float>", m, n, p) && pass;
         pass = testBLASModulesConsistency(F_double, ctx_double, ctx_double_gen, "Modular<double>", m, n, p) && pass;
+#else // !__LELA_BLAS_AVAILABLE
+	commentator.report (Commentator::LEVEL_IMPORTANT, INTERNAL_WARNING)
+		<< "LELA was not configured to use BLAS, so these tests cannot be run. Skipping." << std::endl;
+#endif // __LELA_BLAS_AVAILABLE
 
 	commentator.stop (MSG_STATUS (pass));
 	return pass ? 0 : -1;
