@@ -1,9 +1,9 @@
 // -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 /** @headerfile coeffs.h lela/ring/coeffs.h
  * 
- * This file containg the wrappers for Singular numbers.
+ * This file containg the LELA ring interface wrapper for Number
  *
- * ABSTRACT: These wrappers are needed in order to use the
+ * ABSTRACT: This wrapper are needed in order to use the
  * Singular numbers inside the LELA.
  *
  * Copyright (C) 2011 Oleksandr Motsak
@@ -22,6 +22,8 @@
 #include <lela/ring/interface.h>
 #include <lela/util/error.h>
 
+#include <lela/element/coeff.h>
+
 #include <omalloc/omalloc.h>
 #include <misc/auxiliary.h>
 
@@ -34,185 +36,10 @@
 #include <cassert>
 
 
-/// This structure is needed since LELA expects
-// 
-struct ReferenceCountedElement
-{
-  static omBin lela_reference_counted_numbers_bin;
-
-  typedef number SingularNumber;
-  typedef coeffs SingularRing;
-
-  ReferenceCountedElement(): m_counter(0), m_element(0), m_coeffs(NULL) {}
-  ReferenceCountedElement(SingularNumber c, SingularRing R): m_counter(0), m_element(c), m_coeffs(R) {}  
-
-  long           m_counter; ///< Reference Counter
-  SingularNumber m_element; ///< Referenced Element
-  SingularRing   m_coeffs;  ///< Element's Coeff. Domain, needed for delete
-
-
-  void* operator new ( std::size_t size )
-  {
-    //omTypeAlloc(void*, addr, size);
-    return omAlloc0Bin(ReferenceCountedElement::lela_reference_counted_numbers_bin);
-  }
-  void operator delete ( void* block )
-  { //omfree( block );
-    omFreeBin(block, ReferenceCountedElement::lela_reference_counted_numbers_bin);
-  }
-  
-  static inline void intrusive_ptr_add_ref(ReferenceCountedElement* p)
-  {
-    assert( p!= NULL );
-    assert( p->m_counter >= 0 );
-
-    ++(p->m_counter); 
-  }
-
-  static inline void intrusive_ptr_release(ReferenceCountedElement* p)
-  {
-    assert( p!= NULL );
-    assert( p->m_counter > 0 );
-
-    if( --(p->m_counter) == 0 )
-    {
-      assume( n_Test(p->m_element, p->m_coeffs) );
-      n_Delete(& (p->m_element), p->m_coeffs); // Remove number,
-      delete p; /// TODO: Use Omalloc to delete *m_pointer
-    }
-  }
-}; // Use omalloc for allocating/deallocating...?
-
-omBin ReferenceCountedElement::lela_reference_counted_numbers_bin = omGetSpecBin(sizeof(ReferenceCountedElement));
-
-/// @class Number simple smart pointer guarding Singular numbers.
-///
-/// This class is needed since LELA expects Elements to be able to
-/// construct and destruct themselves.
-/// 
-/// Moreover its purpose is to count references and destroy the
-/// underlying number when it's not references anymore.
-///
-/// The use of underlying Singular number before assiging or
-/// initializing a Number is a bug and will trigger an assert failure
-class Number
-{
-  public:
-    typedef typename ReferenceCountedElement::SingularNumber SingularNumber;
-    typedef typename ReferenceCountedElement::SingularRing   SingularRing;
-
-    Number () : px (NULL) {}
-
-    explicit Number( SingularNumber c, SingularRing R, bool add_ref = true )
-    {
-      assume( n_Test(c, R) );
-
-      px = new ReferenceCountedElement(c, R); /// TODO: Use Omalloc to create it!
-      assume( px != 0 );
-
-      if( add_ref ) ReferenceCountedElement::intrusive_ptr_add_ref( px );
-    }
-
-    Number(Number const & rhs): px( rhs.px )
-    {
-      if( px != 0 ) ReferenceCountedElement::intrusive_ptr_add_ref( px );
-    }
-
-    ~Number()
-    {
-      if( px != 0 ) ReferenceCountedElement::intrusive_ptr_release( px );
-      px = 0;      
-    }
-
-    Number & operator=(Number const & rhs)
-    {
-      Number(rhs).swap(*this);
-      return *this;
-    }
-
-    void reset()
-    {
-      Number().swap( *this );
-    }
-
-    void reset( SingularNumber c, SingularRing R )
-    {
-      Number( c, R ).swap( *this );
-    }
-
-    // Note: this looks like a workaround... TODO?
-    void raw_set( SingularNumber c)
-    {
-      assert( px != 0 );
-      px->m_element = c;
-    }    
-
-    operator SingularNumber() const
-    {
-      return get();
-    }
-
-    operator bool () const
-    {
-      if( px == 0 )
-        return false;
-      
-      if (px->m_coeffs == 0)
-        return false;
-      
-      return n_Test(get(), px->m_coeffs);
-    }
-
-    inline bool belongs_to(SingularRing R) const 
-    {
-      if (px != 0)
-      {
-        assert( R != 0 );
-        assert( R == px->m_coeffs );
-        return (R == px->m_coeffs);
-      }
-      
-      return (R==0);
-    }
-
-    void swap(Number & rhs)
-    {
-      ReferenceCountedElement* tmp = px;
-      px = rhs.px;
-      rhs.px = tmp;
-    }
-
-    long get_counter() const // TODO: can be used in all the in-place ring arithmetic routines of CoeffDomain!
-    {
-      assert( px != 0 );
-      const long c = px->m_counter;
-      assert( c >= 0 );
-      return c;
-    }
-
-  private:
-    SingularNumber get() const
-    {
-      assert( px != 0 );      
-      assert( n_Test(px->m_element, px->m_coeffs) );
-      return px->m_element;
-    }
-    
-
-  private:
-    ReferenceCountedElement* px; ///< contained pointer, with counter
-};
-
-void swap(Number & lhs, Number & rhs)
-{
-  lhs.swap(rhs);
-}
-
 /** Singular coefficient domain
  *
  * This class defines the ring-interface for general Singular coefficients.
  */
-
 class CoeffDomain
 {
   private:
@@ -505,7 +332,7 @@ class CoeffDomain
       assume( z );
       assume( z.belongs_to( _coeffs ) );
       
-      init(x, n_Add(y, z, _coeffs));
+      x = y + z;
       
       assume( x );
       assume( x.belongs_to( _coeffs ) );
@@ -527,7 +354,7 @@ class CoeffDomain
       assume( z );
       assume( z.belongs_to( _coeffs ) );
 
-      init(x, n_Sub(y, z, _coeffs));
+      x = y - z;
       
       assume( x );
       assume( x.belongs_to( _coeffs ) );
@@ -549,7 +376,7 @@ class CoeffDomain
       assume( z );
       assume( z.belongs_to( _coeffs ) );
 
-      init(x, n_Mult(y, z, _coeffs));
+      x = y * z;
           
       assume( x );
       assume( x.belongs_to( _coeffs ) );
