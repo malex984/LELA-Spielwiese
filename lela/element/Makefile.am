@@ -7,4 +7,5 @@ pkgincludesubdir=$(pkgincludedir)/element
 
 pkgincludesub_HEADERS=			\
 	abstract.h			\
-	rational.h
+	rational.h			\
+	coeff.h

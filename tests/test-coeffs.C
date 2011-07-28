@@ -1,4 +1,4 @@
-/* tests/test-coeffs.C
+/** tests/test-coeffs.C
  * Copyright 2011 Oleksandr Motsak
  * Written by Oleksand Motsak <http://goo.gl/mcpzY>
  *
