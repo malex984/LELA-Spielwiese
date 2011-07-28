@@ -3,6 +3,7 @@
  * This is the main page of developer's reference documentation for
  * LELA. It is subdivided into the following groups:
  * 
+ * - \ref lela "Generalities"
  * - \ref ring "Rings"
  * - \ref vector "Vectors"
  * - \ref matrix "Matrices"
@@ -11,6 +12,7 @@
  * - \ref solutions "Solutions"
  * - \ref util "Utilities"
  * 
+ * \defgroup lela Generalities
  * \defgroup ring Rings
  * \defgroup vector Vectors
  * \defgroup matrix Matrices

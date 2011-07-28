@@ -36,10 +36,12 @@ BASIC_TESTS =  \
 	test-matrix		\
         test-blas-generic-module      \
 	test-blas-generic-module-gf2	\
+        test-blas-zp-module     \
 	test-blas-cblas-module	\
 	test-strassen-winograd	\
 	test-elimination	\
 	test-gauss-jordan	\
+	test-splicer		\
 	test-faugere-lachartre  \
 	test-coeffs
 
@@ -111,12 +113,12 @@ test_blas_generic_module_gf2_SOURCES = \
         test-blas-level3.h             \
         test-common.C
 
-#test_blas_zp_module_SOURCES =   \
-#        test-blas-zp-module.C   \
-#        test-blas-level1.h           \
-#        test-blas-level2.h           \
-#        test-blas-level3.h           \
-#        test-common.C
+test_blas_zp_module_SOURCES =   \
+        test-blas-zp-module.C   \
+        test-blas-level1.h           \
+        test-blas-level2.h           \
+        test-blas-level3.h           \
+        test-common.C
 
 test_blas_cblas_module_SOURCES =   \
         test-blas-cblas-module.C   \
@@ -159,11 +161,14 @@ test_gauss_jordan_SOURCES = \
         test-common.C                \
         test-gauss-jordan.C
 
+test_splicer_SOURCES = \
+	test-splicer.C	\
+	test-common.C
+
 test_faugere_lachartre_SOURCES = \
         test-common.C                \
         test-faugere-lachartre.C
 
-# export SINGULARPATH=/GITHUB/w/LINBOX/share/gftables
 test_coeffs_SOURCES = \
         test-coeffs.C \
         test-common.C

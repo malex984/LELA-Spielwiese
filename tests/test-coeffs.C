@@ -229,7 +229,7 @@ bool  MyArithTest (const Ring &R) //  , typename Ring::Element &v
     // :(
     try
     {
-      BLAS3::write(ctx, report << "red RowEchelonForm(D): " << endl, EF.RowEchelonForm(D, true), FORMAT_SAGE);
+      BLAS3::write(ctx, report << "red RowEchelonForm(D): " << endl, EF.echelonize(D, true), FORMAT_SAGE);
     }
     catch (LELAError e)
     {
@@ -243,7 +243,7 @@ bool  MyArithTest (const Ring &R) //  , typename Ring::Element &v
 
     try
     {
-      BLAS3::write(ctx, report << "red RowEchelonForm(S): " << endl, EF.RowEchelonForm(S, true), FORMAT_SAGE); 
+      BLAS3::write(ctx, report << "red RowEchelonForm(S): " << endl, EF.echelonize(S, true), FORMAT_SAGE); 
     }
     catch (LELAError e)
     {
