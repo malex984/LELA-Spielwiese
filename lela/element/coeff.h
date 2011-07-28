@@ -201,6 +201,7 @@ class Number
     Number copy() const
     {
       const SingularRing R = get_ring();
+      
       Number cpy( n_Copy(get_number(), R), R );
 
       assume( cpy );
@@ -229,32 +230,53 @@ class Number
     /// Addition of Numbers
     Number operator+(const Number& right) const
     {
+      const SingularRing R = get_ring();
+
       assume( right );
       assume( test() );
-      assume( right.belongs_to( get_ring() ) );
+      assume( right.belongs_to( R ) );
       
-      return Number( n_Add( get_number(), right, get_ring() ), get_ring() );
+      return Number( n_Add( get_number(), right, R ), R );
     }
 
     /// Subtraction of Numbers
     Number operator-(const Number& right) const
     {
+      const SingularRing R = get_ring();
+      
       assume( right );
       assume( test() );
-      assume( right.belongs_to( get_ring() ) );
+      assume( right.belongs_to( R ) );
 
-      return Number( n_Sub( get_number(), right, get_ring() ), get_ring() );
+
+      return Number( n_Sub( get_number(), right, R ), R );
     }
 
     /// Multiplication of Numbers
     Number operator*(const Number& right) const
     {
+      const SingularRing R = get_ring();
+      
       assume( right );
       assume( test() );
-      assume( right.belongs_to( get_ring() ) );
+      assume( right.belongs_to( R ) );
 
-      return Number( n_Mult( get_number(), right, get_ring() ), get_ring() );
+
+      return Number( n_Mult( get_number(), right, R ), R );
     }
+
+
+
+    /// unary Additive Inverse (Negation) operator
+    Number operator-() const
+    {
+      assume( test() );
+      
+      const SingularRing R = get_ring();
+
+      // Note: n_Neg creates NO NEW number!
+      return Number( n_Neg( n_Copy( get_number(), R ), R ), R );
+    }    
     
 
     // Note: this looks like a workaround... TODO?

@@ -443,12 +443,7 @@ class CoeffDomain
       assume( y );
       assume( y.belongs_to( _coeffs ) );
 
-      init(x, n_Neg( n_Copy(y, _coeffs), _coeffs) ); // Note: n_Neg creates NO NEW number!
-      
-      assume( x );
-      assume( x.belongs_to( _coeffs ) );
-
-      return x;
+      return x = (-y);
 
     }
 
@@ -495,8 +490,9 @@ class CoeffDomain
       assume( x.belongs_to( _coeffs ) );
       assume( y );
       assume( y.belongs_to( _coeffs ) );
-      
-      return addin(mul(r, a, x), y);
+
+      r = a * x;
+      return addin(r, y);
       
     }
 
@@ -565,7 +561,7 @@ class CoeffDomain
       assume( y );
       assume( y.belongs_to( _coeffs ) );
       
-      return add(x, x, y); // No inplace addition -> TODOs!
+      return x = (x + y); // No inplace addition -> TODOs!
     }
 
     /** Inplace Subtraction; x -= y
@@ -584,7 +580,7 @@ class CoeffDomain
       assume( y );
       assume( y.belongs_to( _coeffs ) );
 
-      return sub(x, x, y);  // No inplace subtraction!!!?!
+      return x = (x - y);  // No inplace subtraction!!!?!
     }
 
     /** Inplace Multiplication; x *= y
@@ -603,7 +599,7 @@ class CoeffDomain
       assume( y );
       assume( y.belongs_to( _coeffs ) );
       
-      return mul(x, x, y); // TODO: n_InpMult?
+      return x = (x * y); // TODO: n_InpMult? Use get_counter()!
     }
 
    
@@ -735,8 +731,8 @@ class CoeffDomain
       assume( x );
       assume( x.belongs_to( _coeffs ) );
       
-      Element t;
-      return addin(r, mul(t, a, x));
+      Element t = a * x;
+      return addin(r, t);
       
     }
 
