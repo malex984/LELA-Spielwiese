@@ -142,22 +142,24 @@ class Number
       return *this;
     }
 
-    void reset()
+    /// Reset this instance to an undefined state
+    inline void reset()
     {
       Number().swap( *this );
     }
 
-    void reset( SingularNumber c, SingularRing R )
+    /// Reset this instance to a different state (c in R)
+    inline void reset( SingularNumber c, SingularRing R )
     {
       Number( c, R ).swap( *this );
     }
 
-    operator SingularNumber() const
+    inline operator SingularNumber() const
     {
       return get_number();
     }
 
-    bool test() const
+    inline bool test() const
     {
       if( px == 0 )
         return false;
@@ -168,13 +170,13 @@ class Number
       return n_Test( get_number(), get_ring() );
     }
 
-    operator bool () const
+    inline operator bool () const
     {
       return test();
     }
 
     // operator! is redundant, but some compilers need it
-    bool operator! () const // never throws
+    inline bool operator! () const // never throws
     {
       return !test();
     }    
@@ -191,23 +193,25 @@ class Number
       return (R==0);
     }
 
-    void swap(Number & rhs)
+    inline void swap(Number & rhs)
     {
       ReferenceCountedElement* tmp = px;
       px = rhs.px;
       rhs.px = tmp;
     }
 
-    Number copy() const
+    inline Number copy() const
     {
       const SingularRing R = get_ring();
       
       Number cpy( n_Copy(get_number(), R), R );
 
-      assume( cpy );
+      assume( cpy.test() );
       assume( cpy.belongs_to(R) );
 
-      assume( n_Equal(get_number(), cpy.get_number(), R) );
+      assume( cpy == (*this) );
+      assume( &cpy != this ); // Real Copy!
+      assume( cpy.get_counter() == 1 );
       
       return cpy;
     }
@@ -221,7 +225,7 @@ class Number
       return c;
     }
 
-    const SingularRing& get_ring() const
+    inline const SingularRing& get_ring() const
     {
       assert( px != 0 );      
       return px->m_coeffs;
@@ -232,11 +236,11 @@ class Number
     {
       const SingularRing R = get_ring();
 
-      assume( right );
+      assume( right.test() );
       assume( test() );
       assume( right.belongs_to( R ) );
       
-      return Number( n_Add( get_number(), right, R ), R );
+      return Number( n_Add( get_number(), right.get_number(), R ), R );
     }
 
     /// Subtraction of Numbers
@@ -244,12 +248,11 @@ class Number
     {
       const SingularRing R = get_ring();
       
-      assume( right );
+      assume( right.test() );
       assume( test() );
       assume( right.belongs_to( R ) );
 
-
-      return Number( n_Sub( get_number(), right, R ), R );
+      return Number( n_Sub( get_number(), right.get_number(), R ), R );
     }
 
     /// Multiplication of Numbers
@@ -257,14 +260,26 @@ class Number
     {
       const SingularRing R = get_ring();
       
-      assume( right );
+      assume( right.test() );
       assume( test() );
       assume( right.belongs_to( R ) );
 
-
-      return Number( n_Mult( get_number(), right, R ), R );
+      return Number( n_Mult( get_number(), right.get_number(), R ), R );
     }
 
+
+    /// Division of Numbers
+    Number operator/(const Number& right) const
+    {
+      const SingularRing R = get_ring();
+
+      assume( right.test() );
+      assume( test() );
+      assume( right.belongs_to( R ) );
+
+      return Number( n_Div( get_number(), right.get_number(), R ), R );
+    }
+    
 
 
     /// unary Additive Inverse (Negation) operator
@@ -276,26 +291,97 @@ class Number
 
       // Note: n_Neg creates NO NEW number!
       return Number( n_Neg( n_Copy( get_number(), R ), R ), R );
-    }    
-    
+    }
 
-    // Note: this looks like a workaround... TODO?
-    void raw_set( SingularNumber c)
+    /// Test whether this number is divisible by another (right)
+    inline bool div_by(const Number& right) const
     {
-      assert( px != 0 );
-      px->m_element = c;
-    }    
+      const SingularRing R = get_ring();
 
+      assume( right.test() );
+      assume( test() );
+      assume( right.belongs_to( R ) );
+
+      return n_DivBy(get_number(), right.get_number(), R);
+    }
+    
+    inline bool operator==(const Number& right) const
+    {
+      const SingularRing R = get_ring();
+
+      assume( right.test() );
+      assume( test() );
+      assume( right.belongs_to( R ) );
+
+      // TODO: No additionaly actions if equal?
+      // Proposal to test: remove that method's const modifier
+      // and in equality case: assign *this = right
+      // counter: sum of counters?
+      // Problem: right is immutable... :(
+      // Do we want to hack around that?
+      return n_Equal(get_number(), right.get_number(), R);
+    }
+
+
+    Number& operator*=(const Number& right)
+    {
+      const SingularRing R = get_ring();
+
+      assume( right.test() );
+      assume( test() );
+      assume( right.belongs_to( R ) );
+
+      if( get_counter() == 1 )
+      {
+        SingularNumber& n = get_number();
+        n_InpMult( n, right, R );
+      }
+      else
+      {
+        (*this) = (*this) * right;
+      }
+      return *this;
+    }
+
+
+    Number& negin()
+    {
+      const SingularRing R = get_ring();
+
+      assume( test() );
+
+      if( get_counter() == 1 )
+      {
+        SingularNumber& n = get_number();
+        n = n_Neg( n, R ); // Note: n_Neg creates NO NEW number!
+
+        assume( test() );
+      }
+      else
+      {
+        (*this) = -(*this);
+      }
+      return *this;     
+    }
+                                  
     SingularNumber get_number() const
     {
       assert( px != 0 );      
       assert( n_Test( px->m_element, get_ring() ) );
       return px->m_element;
     }
-
+    
   private:
+    SingularNumber& get_number()
+    {
+      assert( px != 0 );      
+      assert( n_Test( px->m_element, get_ring() ) );
+      return px->m_element;
+    }
+
     ReferenceCountedElement* px; ///< contained pointer, with counter
 };
+
 
 void swap(Number & lhs, Number & rhs)
 {

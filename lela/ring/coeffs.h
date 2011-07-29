@@ -138,7 +138,7 @@ class CoeffDomain
 
       return x;
     }
-    
+
     inline Element &init(Element &x, BaseElement y) const
     {
       assume( n_Test(y, _coeffs ) );
@@ -150,9 +150,8 @@ class CoeffDomain
       assume( x.get_counter() == 1 );
 
       return x;
-      
     }
-
+    
     /** \brief Initialization of ring element from an integer.
      *
      * x becomes the image of n under the natural map from the
@@ -332,7 +331,7 @@ class CoeffDomain
       assume( y );
       assume( y.belongs_to( _coeffs ) );
       
-      return n_Equal(x, y, _coeffs);
+      return (x == y);
     }
 
     /** \brief Addition, x <-- y + z.
@@ -599,7 +598,7 @@ class CoeffDomain
       assume( y );
       assume( y.belongs_to( _coeffs ) );
       
-      return x = (x * y); // TODO: n_InpMult? Use get_counter()!
+      return x *= y; // TODO: n_InpMult? Use get_counter()!
     }
 
    
@@ -648,10 +647,10 @@ class CoeffDomain
       assume( y.belongs_to( _coeffs ) );
 
 
-      if( !n_DivBy(x, y, _coeffs) )
+      if( !x.div_by(y) )
         return false;
       
-      init(x, n_Div(x, y, _coeffs));
+      x = (x / y);
 
       assume( x );
       assume( x.belongs_to( _coeffs ) );
@@ -671,19 +670,8 @@ class CoeffDomain
     {
       assume( x );
       assume( x.belongs_to( _coeffs ) );
-
-      if( x.get_counter() == 1 )
-      {
-        x.raw_set( n_Neg(x, _coeffs) );  // Note: n_Neg creates NO NEW number!
-        return x;
-      } else
-      {
-        Element y; copy(y, x);  assume( &y != &x ); // real copy!
-        y.raw_set( n_Neg(y, _coeffs) );  // Note: n_Neg creates NO NEW number!
-        assume( y );
-        assume( y.belongs_to( _coeffs ) );
-        return x = y;
-      }
+      
+      return x.negin();      
     }
 
     /** Inplace Multiplicative Inverse.
