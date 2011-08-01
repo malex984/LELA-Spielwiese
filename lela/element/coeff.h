@@ -20,6 +20,8 @@
 
 #include <cassert>
 
+// static int iTotalCount = 0;
+
 /// @class ReferenceCountedElement
 /// This structure is needed for Number: the smart pointer stores all
 /// the data in here and completely manages it.
@@ -53,16 +55,21 @@ struct ReferenceCountedElement
   /// Standard intrusive_ptr_add_ref for this structure
   static inline void intrusive_ptr_add_ref(ReferenceCountedElement* p)
   {
+//    ++iTotalCount;
+    
     assert( p!= NULL );
     assert( p->m_counter >= 0 );
 
-    ++(p->m_counter); 
+    ++(p->m_counter);
+
   }
 
   /// Standard intrusive_ptr_release for this structure, which handles
   /// the destruction of the underlying number as well
   static inline void intrusive_ptr_release(ReferenceCountedElement* p)
   {
+//    --iTotalCount;
+    
     assert( p!= NULL );
     assert( p->m_counter > 0 );
 
@@ -80,6 +87,16 @@ struct ReferenceCountedElement
 
 }; // Use omalloc for allocating/deallocating...?
 
+
+// class MyTotalCountTester
+// {
+//   public:
+//     MyTotalCountTester(){ assert(iTotalCount == 0); }
+// 
+//     ~MyTotalCountTester(){ assert(iTotalCount == 0);  }
+// };
+// MyTotalCountTester tester();
+
 omBin ReferenceCountedElement::lela_reference_counted_numbers_bin = omGetSpecBin(sizeof(ReferenceCountedElement));
 
 /// @class Number This is a simple smart pointer guarding Singular numbers.
@@ -94,10 +111,22 @@ omBin ReferenceCountedElement::lela_reference_counted_numbers_bin = omGetSpecBin
 /// initializing a Number is a bug and will trigger an assert failure
 class Number
 {
-  public:
-    typedef typename ReferenceCountedElement::SingularNumber SingularNumber;
-    typedef typename ReferenceCountedElement::SingularRing   SingularRing;
+  typedef typename ReferenceCountedElement::SingularNumber SingularNumber;
+  typedef typename ReferenceCountedElement::SingularRing   SingularRing;
 
+  explicit Number( SingularNumber c, SingularRing R, bool add_ref = true )
+  {
+    assert( R != 0 );
+
+    assume( n_Test(c, R) );
+
+    px = new ReferenceCountedElement(c, R); /// TODO: Use Omalloc to create it!
+    assume( px != 0 );
+
+    if( add_ref ) ReferenceCountedElement::intrusive_ptr_add_ref( px );
+  }
+
+  public:
     Number () : px (NULL) {}
 
     explicit Number( const int i, SingularRing R )
@@ -111,18 +140,6 @@ class Number
       assume( px != 0 );
 
       ReferenceCountedElement::intrusive_ptr_add_ref( px );
-    }
-
-    explicit Number( SingularNumber c, SingularRing R, bool add_ref = true )
-    {
-      assert( R != 0 );
-      
-      assume( n_Test(c, R) );
-
-      px = new ReferenceCountedElement(c, R); /// TODO: Use Omalloc to create it!
-      assume( px != 0 );
-
-      if( add_ref ) ReferenceCountedElement::intrusive_ptr_add_ref( px );
     }
 
     Number(Number const & rhs): px( rhs.px )
@@ -283,7 +300,7 @@ class Number
 
 
     /// unary Additive Inverse (Negation) operator
-    Number operator-() const
+    inline Number operator-() const
     {
       assume( test() );
       
@@ -292,6 +309,43 @@ class Number
       // Note: n_Neg creates NO NEW number!
       return Number( n_Neg( n_Copy( get_number(), R ), R ), R );
     }
+
+    /// Multiplicative Inverse
+    inline Number inversion() const
+    {
+      assume( test() );
+
+      const SingularRing R = get_ring();
+
+      // Note: n_Neg creates NO NEW number!
+      return Number( n_Invers( get_number(), R ), R );
+    }
+
+    /// Test whether this number is zero
+    inline bool is_zero() const
+    {
+      const SingularRing R = get_ring();
+      assume( test() );
+      return n_IsZero(get_number(), R);
+    }
+    
+    /// Test whether this number is one
+    inline bool is_one() const
+    {
+      const SingularRing R = get_ring();
+      assume( test() );
+      return n_IsOne(get_number(), R);
+    }
+
+    /// Test whether this number is -one
+    inline bool is_minusone() const
+    {
+      const SingularRing R = get_ring();
+      assume( test() );
+      return n_IsMOne(get_number(), R);
+    }
+    
+    
 
     /// Test whether this number is divisible by another (right)
     inline bool div_by(const Number& right) const
@@ -304,6 +358,7 @@ class Number
 
       return n_DivBy(get_number(), right.get_number(), R);
     }
+
     
     inline bool operator==(const Number& right) const
     {
@@ -323,6 +378,7 @@ class Number
     }
 
 
+    /// Inplace Multiplication; (*this) *= right
     Number& operator*=(const Number& right)
     {
       const SingularRing R = get_ring();
@@ -334,7 +390,7 @@ class Number
       if( get_counter() == 1 )
       {
         SingularNumber& n = get_number();
-        n_InpMult( n, right, R );
+        n_InpMult( n, right.get_number(), R );
       }
       else
       {
@@ -343,6 +399,77 @@ class Number
       return *this;
     }
 
+    /// Inplace Division; (*this) /= right
+    Number& operator/=(const Number& right)
+    {
+      const SingularRing R = get_ring();
+
+      assume( right.test() );
+      assume( test() );
+      assume( right.belongs_to( R ) );
+
+      if( get_counter() == 1 )
+      {
+        SingularNumber& n = get_number();
+        SingularNumber nn = n_Div( n, right.get_number(), R );
+        n_Delete( &n, R );
+        n = nn;
+      }
+      else
+      {
+        (*this) = (*this) / right;
+      }
+      return *this;
+    }
+
+    // No inplace addition -> TODOs!
+    /// Inplace Addition; *this += right
+    Number& operator+=(const Number& right)
+    {
+      const SingularRing R = get_ring();
+
+      assume( right.test() );
+      assume( test() );
+      assume( right.belongs_to( R ) );
+
+      if( get_counter() == 1 )
+      {
+        SingularNumber& n = get_number();        
+        SingularNumber nn = n_Add( n, right.get_number(), R );
+        n_Delete( &n, R );
+        n = nn;
+      }
+      else
+      {
+        (*this) = ((*this) + right);
+      }
+      return *this;
+    }
+
+    // No inplace Subtraction -> TODOs!
+    /// Inplace Subtraction; *this += right
+    Number& operator-=(const Number& right)
+    {
+      const SingularRing R = get_ring();
+
+      assume( right.test() );
+      assume( test() );
+      assume( right.belongs_to( R ) );
+
+      if( get_counter() == 1 )
+      {
+        SingularNumber& n = get_number();        
+        SingularNumber nn = n_Sub( n, right.get_number(), R );
+        n_Delete( &n, R );
+        n = nn;
+      }
+      else
+      {
+        (*this) = ((*this) - right);
+      }
+      return *this;
+    }
+    
 
     Number& negin()
     {
@@ -363,15 +490,52 @@ class Number
       }
       return *this;     
     }
+
+
+    inline int convert_to_int() const
+    {
+      const SingularRing R = get_ring();
+
+      assume( test() );
+
+       // TODO: this is _REALLY_ ugly!
+      SingularNumber t = n_Copy(get_number(), R);
+      assume( n_Test(t, R) );      
+      const int n = n_Int(t, R); // NOTE: Changes t!
+      assume( n_Test(t, R) );
+      n_Delete(&t, R);
+      
+      return n;
+    }
+
+    inline const char* convert_to_string() const
+    {
+      const SingularRing R = get_ring();
+
+      assume( test() );
+
+       // TODO: this is _REALLY_ ugly!
+      SingularNumber t = n_Copy(get_number(), R);
+      assume( n_Test(t, R) );
+
+      StringSetS("");
+      n_Write(t, R);  // NOTE: Changes t!
+      const char* s = StringAppendS("");
+      
+      assume( n_Test(t, R) );
+      n_Delete(&t, R);
+
+      return s;
+    }
                                   
+  private:
     SingularNumber get_number() const
     {
       assert( px != 0 );      
       assert( n_Test( px->m_element, get_ring() ) );
       return px->m_element;
     }
-    
-  private:
+
     SingularNumber& get_number()
     {
       assert( px != 0 );      

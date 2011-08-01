@@ -138,19 +138,6 @@ class CoeffDomain
 
       return x;
     }
-
-    inline Element &init(Element &x, BaseElement y) const
-    {
-      assume( n_Test(y, _coeffs ) );
-
-      x = Number(y, _coeffs);
-
-      assume( x );
-      assume( x.belongs_to( _coeffs ) );
-      assume( x.get_counter() == 1 );
-
-      return x;
-    }
     
     /** \brief Initialization of ring element from an integer.
      *
@@ -348,7 +335,7 @@ class CoeffDomain
       assume( z );
       assume( z.belongs_to( _coeffs ) );
       
-      x = y + z;
+      x = (y + z);
       
       assume( x );
       assume( x.belongs_to( _coeffs ) );
@@ -370,7 +357,7 @@ class CoeffDomain
       assume( z );
       assume( z.belongs_to( _coeffs ) );
 
-      x = y - z;
+      x = (y - z);
       
       assume( x );
       assume( x.belongs_to( _coeffs ) );
@@ -392,7 +379,7 @@ class CoeffDomain
       assume( z );
       assume( z.belongs_to( _coeffs ) );
 
-      x = y * z;
+      x = (y * z);
           
       assume( x );
       assume( x.belongs_to( _coeffs ) );
@@ -419,10 +406,10 @@ class CoeffDomain
       assume( z );
       assume( z.belongs_to( _coeffs ) );
 
-      if( !n_DivBy(y, z, _coeffs) )
+      if( !y.div_by(z) )
         return false;
 
-      init(x, n_Div(y, z, _coeffs));
+      x = (y / z);
 
       assume( x );
       assume( x.belongs_to( _coeffs ) );
@@ -442,8 +429,12 @@ class CoeffDomain
       assume( y );
       assume( y.belongs_to( _coeffs ) );
 
-      return x = (-y);
+      x = (-y);
+      
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
 
+      return x;
     }
 
     /** \brief Multiplicative Inverse, x <-- 1 / y.
@@ -462,10 +453,10 @@ class CoeffDomain
       assume( y );
       assume( y.belongs_to( _coeffs ) );
 
-      if( !n_DivBy(one(), y, _coeffs) )
+      if( !one().div_by(y) )
         return false;
 
-      init(x, n_Invers(y, _coeffs));
+      x = y.inversion();
 
       assume( x );
       assume( x.belongs_to( _coeffs ) );
@@ -514,7 +505,7 @@ class CoeffDomain
       assume( x );
       assume( x.belongs_to( _coeffs ) );
       
-      return n_IsZero(x, _coeffs);
+      return x.is_zero();
     }
 
     /** Equality with the one-element
@@ -531,7 +522,7 @@ class CoeffDomain
       assume( x );
       assume( x.belongs_to( _coeffs ) );
 
-      return n_IsOne(x, _coeffs);
+      return x.is_one();
     }
     //@}
 
@@ -559,8 +550,13 @@ class CoeffDomain
       assume( x.belongs_to( _coeffs ) );
       assume( y );
       assume( y.belongs_to( _coeffs ) );
+
+      x += y; 
       
-      return x = (x + y); // No inplace addition -> TODOs!
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+      
+      return x;
     }
 
     /** Inplace Subtraction; x -= y
@@ -579,7 +575,12 @@ class CoeffDomain
       assume( y );
       assume( y.belongs_to( _coeffs ) );
 
-      return x = (x - y);  // No inplace subtraction!!!?!
+      x -= y; 
+
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+
+      return x;
     }
 
     /** Inplace Multiplication; x *= y
@@ -598,7 +599,12 @@ class CoeffDomain
       assume( y );
       assume( y.belongs_to( _coeffs ) );
       
-      return x *= y; // TODO: n_InpMult? Use get_counter()!
+      x *= y; 
+
+      assume( x );
+      assume( x.belongs_to( _coeffs ) );
+
+      return x;
     }
 
    
@@ -650,7 +656,7 @@ class CoeffDomain
       if( !x.div_by(y) )
         return false;
       
-      x = (x / y);
+      x /= y;
 
       assume( x );
       assume( x.belongs_to( _coeffs ) );
@@ -719,8 +725,12 @@ class CoeffDomain
       assume( x );
       assume( x.belongs_to( _coeffs ) );
       
-      Element t = a * x;
-      return addin(r, t);
+      r += (a * x);
+
+      assume( r );
+      assume( r.belongs_to( _coeffs ) );
+      
+      return r;
       
     }
 
@@ -769,17 +779,7 @@ class CoeffDomain
       assume( x );
       assume( x.belongs_to( _coeffs ) );
       
-      BaseElement t = n_Copy(x, _coeffs); // TODO: this is _REALLY_ ugly!
-      assume( n_Test(t, _coeffs) );
-      
-      StringSetS("");
-      n_Write(t, _coeffs); 
-      const char* s = StringAppendS("");
-
-      assume( n_Test(t, _coeffs) );
-      n_Delete(&t, _coeffs);
-
-      return os << s;
+      return os << x.convert_to_string();
     }
 
     /** Read ring element.
@@ -825,7 +825,7 @@ class CoeffDomain
     {
       assume( _zero );      
       assume( _zero.belongs_to( _coeffs ) );
-      assume( n_IsZero(_zero, _coeffs) );
+      assume( _zero.is_zero() );
 
       return _zero;
     }
@@ -835,7 +835,7 @@ class CoeffDomain
     {
       assume( _one );
       assume( _one.belongs_to( _coeffs ) );      
-      assume( n_IsOne(_one, _coeffs) );
+      assume( _one.is_one() );
       
       return _one;      
     }
@@ -845,7 +845,7 @@ class CoeffDomain
     {
       assume( _minus_one );
       assume( _minus_one.belongs_to( _coeffs ) );
-      assume( n_IsMOne(_minus_one, _coeffs) );
+      assume( _minus_one.is_minusone() );
       
       return _minus_one;      
     }
@@ -868,11 +868,8 @@ class CoeffDomain
       assume( y );
       assume( y.belongs_to( _coeffs ) );
 
-      BaseElement t = n_Copy(y, _coeffs);
-      assume( n_Test(t, _coeffs) );
-      n = n_Int(t, _coeffs);
-      assume( n_Test(t, _coeffs) );
-      n_Delete(&t, _coeffs);      
+      n = y.convert_to_int();
+      
       return n;
     }
 
